@@ -1,13 +1,30 @@
 const handler = async (m, { conn }) => {
-  let q = m.quoted? m.quoted : m
-  if (!q.message) return m.reply('Réponds à une vue unique avec ₩vn')
-  let mime = Object.keys(q.message)[0]
-  let data = q.message[mime]
-  if (!data.viewOnce) return m.reply('Ce n\'est pas une vue unique!')
+  if (!m.quoted) return m.reply('Réponds à une vue unique avec ₩vn')
+  let q = m.quoted
+  let msg = q.message
+  if (!msg) return m.reply('Message introuvable')
+
+  // Détecte vue unique
+  let viewOnce = msg.viewOnceMessageV2 || msg.viewOnceMessage
+  if (!viewOnce) return m.reply('Ce n\'est pas une vue unique!')
+
+  let inner = viewOnce.message
+  let type = Object.keys(inner)[0]
+  let media = inner[type]
+  let caption = media.caption || 'Vue unique? Pas avec moi 😎'
+
   let buff = await q.download()
-  let type = mime.replace('Message','')
-  await conn.sendMessage(m.chat, { [type]: buff, caption: data.caption || 'Vue unique? Pas avec moi 😎' }, { quoted: m })
+
+  if (type === 'imageMessage') {
+    await conn.sendMessage(m.chat, { image: buff, caption: caption }, { quoted: m })
+  } else if (type === 'videoMessage') {
+    await conn.sendMessage(m.chat, { video: buff, caption: caption }, { quoted: m })
+  } else if (type === 'audioMessage') {
+    await conn.sendMessage(m.chat, { audio: buff, ptt: media.ptt || false }, { quoted: m })
+  } else {
+    await conn.sendMessage(m.chat, { [type.replace('Message','')]: buff, caption: caption }, { quoted: m })
+  }
 }
-handler.command = ['vv','vn','rvo']
+handler.command = ['vv','vn','rvo','vu']
 handler.help = ['vv']
 module.exports = handler
