@@ -3,7 +3,6 @@ const P = require('pino')
 const fs = require('fs')
 const express = require('express')
 const NodeCache = require('node-cache')
-const QRCode = require('qrcode')
 const app = express()
 const PORT = process.env.PORT || 10000
 
@@ -14,11 +13,12 @@ const PREFIX = "₩"
 const DB_FILE = './black_db.json'
 const msgRetryCounterCache = new NodeCache()
 
-let db = { amis:{}, saved:[], pro:[], protec:[], chut:{}, blockadmin:[], godmode:[], kaio:[], antilink:[], antisticker:[], antistatus:[], welcome:[], pt:[], ghost:[], muted:[] }
+let db = { amis:{}, saved:[], pro:[], protec:[], chut:{}, blockadmin:[], godmode:[], kaio:[], antilink:[], antisticker:[], antistatus:[], welcome:[], pt:[], ghost:[], muted:[], autoPromote:{}, autoDemote:{} }
 if(fs.existsSync(DB_FILE)){ try{ db={...db,...JSON.parse(fs.readFileSync(DB_FILE))} }catch{} }
-const saveDB = ()=>fs.writeFileSync(DB_FILE, JSON.stringify(db))
+const saveDB = ()=>fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2))
 
-let sock, status="Demarrage...", lastCode="pas encore", latestQR=null
+let sock, status="Demarrage...", lastCode="pas encore"
+let lastQR = null
 let messageStore = {}
 
 const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
@@ -28,7 +28,7 @@ const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 ┃ ₩hidetag [txt]
 ┃ ₩kick @m
 ┃ ₩ban @m
-┃ ₩promote @m [min]
+┃ ₩promote @m
 ┃ ₩demote @m
 ┃ ₩mute / ₩unmute
 ┃ ₩admin
@@ -72,12 +72,11 @@ const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 
 const R = {
   noPerm: "😈 Tu oses invoquer BLACK GOKU sans ma permission? Agenouille-toi, mortel.",
-  onlyOwner: "👑🔥 SEUL LE DIEU SUPRÊME 5551982215198 PEUT FAIRE ÇA.",
+  onlyOwner: "👑🔥 SEUL Black Goku PEUT utiliser ce bot.",
   ban:(j)=>`💀 HAKAI! @${j.split('@')[0]} effacé de l'existence.`,
   kick:(j)=>`💀 @${j.split('@')[0]} expulsé du royaume divin.`,
-  promote:(j)=>`👑 @${j.split('@')[0]} élevé au rang de Dieu de la Destruction.`,
-  promoteMin:(j)=>`⏳ @${j.split('@')[0]} reçoit un fragment de mon pouvoir.`,
-  demote:(j)=>`💔 @${j.split('@')[0]} déchu.`,
+  promote:(j)=>`👑 @${j.split('@')[0]} élevé au rang de Dieu pour TOUJOURS.`,
+  demote:(j)=>`💔 @${j.split('@')[0]} déchu pour TOUJOURS.`,
   mute:"🤫 SILENCE ABSOLU! BLACK GOKU ordonne le silence!",
   unmute:"🔊 BLACK GOKU vous autorise à parler.",
   admin:(list)=>`👑 *LES DIEUX DE CE ROYAUME* 👑\n\n${list}`,
@@ -93,14 +92,14 @@ const R = {
   save:(j)=>`🛡️ @${j.split('@')[0]} marqué Intouchable.`,
   unsave:(j)=>`🛡️ Marque retirée @${j.split('@')[0]}.`,
   pro:(j)=>`✨ @${j.split('@')[0]} béni PRO.`,
-  protec:(j)=>`👑🔥 *PROTEC ABSOLUE* 🔥👑\n\n@${j.split('@')[0]} est l'ÉLU!`,
+  protec:(j)=>`👑🔥 *PROTEC ABSOLUE* 🔥👑\n\n@${j.split('@')[0]}  Protégé par Black Goku.`,
   unprotec:(j)=>`💀 PROTEC retirée @${j.split('@')[0]}.`,
   protecTriggered:(prot, att)=>`☯️🔥 *PROTEC ACTIVÉE!* 🔥☯️\n\n💀 @${att.split('@')[0]} a osé bannir @${prot.split('@')[0]}!\n✅ Élu remis\n💀 Attaquant banni!`,
   protecDemote:(prot, att)=>`☯️🔥 *PROTEC ANTI-DEMOTE!* 🔥☯️\n\n💀 @${att.split('@')[0]} a osé demote @${prot.split('@')[0]}!\n✅ Admin rendu\n💀 Attaquant déchu!`,
   protecFail: "⚠️ PROTEC détecté mais je ne suis pas admin! METTEZ BLACK GOKU ADMIN!",
   godmode:"☯️ *GODMODE ACTIVÉ* ☯️",
   godmodeoff:"GODMODE OFF.",
-  kaio:"🔥 *KAIO-KEN x1000 ACTIVÉ!*",
+  kaio:"🔥 *KAIO-KEN x1000 ACTIVÉ!* Groupe protégé par Black Goku!",
   kaiooff:"KAIO OFF.",
   antilink:"🔗 *ANTILINK ON!*",
   antilinkoff:"ANTILINK OFF.",
@@ -110,58 +109,62 @@ const R = {
   antistatusoff:"ANTISTATUS OFF.",
   welcome:"👋 *WELCOME ON*",
   welcomeoff:"WELCOME OFF.",
-  welcomeMsg:(j, g)=>`꧁༒☬ BIENVENUE ☬༒꧂\n\n👑 @${j.split('@')[0]} dans *${g}*.\nJe suis BLACK GOKU, ton maître.`,
-  byeMsg:(j)=>`💀 @${j.split('@')[0]} a fui.`,
+  welcomeMsg:(j, g)=>`꧁༒☬ BIENVENUE ☬༒꧂\n\n👑 @${j.split('@')[0]} dans *${g}*.\nJe suis BLACK GOKU, et comporte toi bien ou tu subiras ma colere.`,
   vqOk: "👁️🔥 *VUE UNIQUE DÉVOILÉE* 🔥👁️",
   vqNeed: "😈 Réponds à une vue unique avec ₩vq!",
-  sticker:"✨ Sticker forgé.",
   rdm:(n)=>`🎲 Destin: *${n}*!`,
   boy:"💀 JE SUIS UN DIEU!",
   ghost:"👻 *GHOST MODE ON*",
   ghostoff:"GHOST OFF.",
   pt:"🗣️ Modo PT ON.",
   ptoff:"Modo PT OFF.",
-  boton:"🤖🔥 *BLACK GOKU SE RÉVEILLE!*",
-  botoff:"💤 BLACK GOKU S'ENDORT...",
   amis:(j)=>`✅✅✅ *AMITIÉ DIVINE!* @${j.split('@')[0]} AMI DE BLACK GOKU!`,
   noami:(j)=>`❌💀 *BANNI!* @${j.split('@')[0]} redevenu insecte!`,
   needTag:"😈 TAG UN MORTEL! @m"
 }
 
-app.get('/', (req,res)=> res.send(`<h1>${status}</h1><p>CODE: ${lastCode}</p><p><a href="/qr">VOIR QR CODE</a> | <a href="/pair?num=${OWNER_NUMBER}">PAIR</a> | <a href="/clear">CLEAR</a> | <a href="/save">SAVE CREDS</a></p>`))
-
-app.get('/qr', async(req,res)=>{
-  if(!latestQR) return res.send('<h1>QR pas prêt... refresh dans 3s</h1><script>setTimeout(()=>location.reload(),3000)</script>')
-  try{
-    let qrImage = await QRCode.toDataURL(latestQR)
-    res.send(`<h1 style="text-align:center">SCANNE CE QR!</h1><div style="text-align:center"><img src="${qrImage}" style="width:320px;border:10px solid black"><p>WhatsApp > Appareils liés > Lier un appareil</p><p>QR change toutes les 30s - Refresh auto</p></div><script>setTimeout(()=>location.reload(),20000)</script>`)
-  }catch(e){ res.send(e.message) }
+app.get('/', (req,res)=> res.send(`
+  <h1>${status}</h1>
+  <p>CODE PAIR: ${lastCode}</p>
+  <a href="/pair?num=${OWNER_NUMBER}" style="padding:10px;background:green;color:white;text-decoration:none">📱 PAIR CODE</a>
+  <a href="/qr" style="padding:10px;background:blue;color:white;text-decoration:none;margin-left:10px">📷 QR CODE</a>
+  <a href="/clear" style="padding:10px;background:red;color:white;text-decoration:none;margin-left:10px">CLEAR</a>
+  <a href="/save" style="padding:10px;background:black;color:white;text-decoration:none;margin-left:10px">SAVE CREDS</a>
+`))
+app.get('/qr', (req,res)=>{
+  if(!lastQR) return res.send(`<h1>Pas de QR - ${status}</h1><p>Fais /clear puis refresh</p><a href="/">Retour</a><script>setTimeout(()=>location.reload(), 5000)</script>`)
+  res.send(`
+    <div style="text-align:center">
+      <h1>📷 SCANNE CE QR CODE</h1>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(lastQR)}" style="border:10px solid black"/>
+      <p>Expire en 25s - Refresh auto</p>
+      <script>setTimeout(()=>location.reload(), 25000)</script>
+    </div>
+  `)
 })
-
 app.get('/clear', (req,res)=>{
   try{
     if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true});
     fs.mkdirSync('auth2',{recursive:true});
-    latestQR=null
-    res.send('✅ CLEAR OK - Fais Manual Deploy > Clear build cache & Deploy sur Render')
+    lastQR = null
+    res.send('✅ CLEAR OK - Fais Clear build cache & Deploy sur Render puis va sur /qr')
   }catch(e){ res.send(e.message) }
 })
 app.get('/save', (req,res)=>{
   try{
-    if(!fs.existsSync('auth2/creds.json')) return res.send('Pas encore connecté! Fais /qr ou /pair d\'abord')
+    if(!fs.existsSync('auth2/creds.json')) return res.send('Pas encore connecté! Fais /pair ou /qr')
     let creds = fs.readFileSync('auth2/creds.json','utf8')
-    res.send(`<h2>Copie ce fichier dans GitHub: auth2/creds.json</h2><textarea style="width:100%;height:80vh">${creds}</textarea>`)
+    res.send(`<textarea style="width:100%;height:90vh">${creds}</textarea>`)
   }catch(e){ res.send(e.message) }
 })
 app.get('/pair', async(req,res)=>{
   let num=(req.query.num||'').replace(/[^0-9]/g,'')||OWNER_NUMBER
   try{
-    if(!sock){ return res.send('Bot demarre... attends 10s et refresh'); }
+    if(!sock) return res.send('Bot demarre... attends 10s et refresh');
     await new Promise(r=>setTimeout(r,2000))
     let code=await sock.requestPairingCode(num);
     lastCode=code;
-    console.log("CODE:", code, "pour", num)
-    res.send(`<h1 style="font-size:60px;text-align:center">${code}</h1><p style="text-align:center">Tape en 15 sec! WhatsApp > Appareils liés > Lier avec numéro</p>`)
+    res.send(`<h1 style="font-size:60px;text-align:center">${code}</h1>`)
   }catch(e){ res.send('Erreur: '+e.message) }
 })
 
@@ -169,30 +172,38 @@ async function startBot(){
   try{
     const { version } = await fetchLatestBaileysVersion().catch(()=>({version:[2,3000,1015901307]}))
     const { state, saveCreds } = await useMultiFileAuthState('auth2')
+
+    const getMessage = async (key) => {
+      if(messageStore[key.id]) return { conversation: messageStore[key.id].text }
+      return { conversation: "BLACK GOKU" }
+    }
+
     sock = makeWASocket({
       version,
       auth:{creds:state.creds, keys:makeCacheableSignalKeyStore(state.keys, P({level:'silent'}))},
       logger:P({level:'silent'}),
-      browser:["Chrome","Ubuntu","22.04"],
+      browser:["Ubuntu","Chrome","20.0.04"],
       msgRetryCounterCache,
-      markOnlineOnConnect:false,
-      syncFullHistory:false,
+      getMessage,
+      markOnlineOnConnect:true,
+      syncFullHistory:true,
       keepAliveIntervalMs: 10000,
-      connectTimeoutMs: 60000
+      connectTimeoutMs: 60000,
+      retryRequestDelayMs: 250,
+      fireInitQueries: true
     })
     sock.ev.on('creds.update', saveCreds)
     sock.ev.on('connection.update', async(u)=>{
-      if(u.qr){ latestQR=u.qr; status="QR DISPONIBLE - Va sur /qr"; console.log("NEW QR!") }
-      if(u.connection==='open'){ status="BLACK GOKU ACTIF ✅ H24"; console.log(status); latestQR=null }
-      if(u.connection==='close'){
+      const { connection, lastDisconnect, qr } = u
+      if(qr) lastQR = qr
+      if(connection==='open'){ status="BLACK GOKU ACTIF ✅ H24"; lastQR=null; console.log(status) }
+      if(connection==='close'){
         let reason = u.lastDisconnect?.error?.output?.statusCode
-        console.log("Close reason:", reason)
         if(reason===401){
           if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true});
           fs.mkdirSync('auth2',{recursive:true});
         }
-        status="Redemarrage...";
-        setTimeout(startBot,3000)
+        status="Redemarrage..."; setTimeout(startBot,3000)
       }
     })
 
@@ -203,14 +214,16 @@ async function startBot(){
       const sender = m.key.participant || from
       const senderNum = sender.replace(/[^0-9]/g,'')
       const isMe = m.key.fromMe
-      const isOwner = isMe || senderNum.includes(OWNER_NUMBER) || db.amis[senderNum] || db.amis[sender]
+      const isOwner = isMe || senderNum === OWNER_NUMBER || db.amis[senderNum]
 
-      if(from.endsWith('@g.us') && db.kaio.includes(from)){
-        if(Object.keys(messageStore).length>1000){ messageStore={} }
-        messageStore[m.key.id] = { text: m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || "[media]", sender, from }
+      if(from.endsWith('@g.us')){
+        if(Object.keys(messageStore).length>1000) messageStore={}
+        messageStore[m.key.id] = { text: m.message.conversation || m.message.extendedTextMessage?.text || "", sender, from }
       }
 
       let text = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || m.message.videoMessage?.caption || ""
+      if(!text) return
+      text = text.trim()
       if(!text.startsWith(PREFIX)) return
       if(!isOwner){ await sock.sendMessage(from, {text: R.noPerm}, {quoted:m}); return }
 
@@ -222,7 +235,7 @@ async function startBot(){
       if(cmd==="vq"){
         try{
           let quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage
-          if(!quoted){ await sock.sendMessage(from, {text: R.vqNeed}, {quoted:m}); return }
+          if(!quoted) return await sock.sendMessage(from, {text: R.vqNeed}, {quoted:m})
           let viewOnce = quoted.viewOnceMessage || quoted.viewOnceMessageV2 || quoted.viewOnceMessageV2Extension
           let msgToDownload = viewOnce? viewOnce.message : quoted
           let vType = Object.keys(msgToDownload)[0]
@@ -230,97 +243,89 @@ async function startBot(){
           let cap = msgToDownload[vType]?.caption || ""
           if(vType==='imageMessage') await sock.sendMessage(from, {image: buffer, caption: R.vqOk+"\n\n"+cap}, {quoted:m})
           else if(vType==='videoMessage') await sock.sendMessage(from, {video: buffer, caption: R.vqOk+"\n\n"+cap}, {quoted:m})
-          else await sock.sendMessage(from, {text: "❌ Pas une vue unique"}, {quoted:m})
         }catch(e){ await sock.sendMessage(from, {text: "❌ Erreur VQ: "+e.message}, {quoted:m}) }
         return
       }
 
       if(isGroup && (cmd==="tagall" || cmd==="hidetag")){
         if(!meta) return
-        let mentions=meta.participants.map(p=>p.id)
-        let tagText = (cmd==="tagall"?R.tagall(txt):"👻 Invocation...\n\n"+txt) + "\n\n" + meta.participants.map(p=>`@${p.id.split('@')[0]}`).join(' ')
-        await sock.sendMessage(from,{text:tagText, mentions})
+        await sock.sendMessage(from,{text:(cmd==="tagall"?R.tagall(txt):"👻 "+txt)+"\n\n"+meta.participants.map(p=>`@${p.id.split('@')[0]}`).join(' '), mentions:meta.participants.map(p=>p.id)})
       }
-
       if((cmd==="ban" || cmd==="kick")){
         if(!target) return await sock.sendMessage(from,{text:R.needTag})
-        let isProtected = db.protec.includes(target) || db.pro.includes(target) || db.saved.includes(target)
-        if(isProtected){ await sock.sendMessage(from,{text:`😈 IMPOSSIBLE! @${target.split('@')[0]} est sous PROTEC!`, mentions:[target]}); return }
+        if(db.protec.includes(target)) return await sock.sendMessage(from,{text:`😈 IMPOSSIBLE! @${target.split('@')[0]} est sous PROTEC!`, mentions:[target]})
         await sock.groupParticipantsUpdate(from,[target],"remove").catch(()=>{})
         await sock.sendMessage(from,{text:R.ban(target), mentions:[target]})
       }
-      if(cmd==="promote"){ if(!target) return; let isMin=txt.includes("min"); await sock.groupParticipantsUpdate(from,[target],"promote").catch(()=>{}); await sock.sendMessage(from,{text:isMin?R.promoteMin(target):R.promote(target), mentions:[target]}) }
-      if(cmd==="demote"){ if(!target) return; await sock.groupParticipantsUpdate(from,[target],"demote").catch(()=>{}); await sock.sendMessage(from,{text:R.demote(target), mentions:[target]}) }
+      if(cmd==="promote"){
+        if(!target) return await sock.sendMessage(from,{text:R.needTag})
+        if(!db.autoPromote[from]) db.autoPromote[from]=[]
+        if(!db.autoPromote[from].includes(target)) db.autoPromote[from].push(target)
+        if(db.autoDemote[from]) db.autoDemote[from]=db.autoDemote[from].filter(x=>x!==target)
+        saveDB(); await sock.groupParticipantsUpdate(from,[target],"promote").catch(()=>{}); await sock.sendMessage(from,{text:R.promote(target), mentions:[target]})
+      }
+      if(cmd==="demote"){
+        if(!target) return await sock.sendMessage(from,{text:R.needTag})
+        if(!db.autoDemote[from]) db.autoDemote[from]=[]
+        if(!db.autoDemote[from].includes(target)) db.autoDemote[from].push(target)
+        if(db.autoPromote[from]) db.autoPromote[from]=db.autoPromote[from].filter(x=>x!==target)
+        saveDB(); await sock.groupParticipantsUpdate(from,[target],"demote").catch(()=>{}); await sock.sendMessage(from,{text:R.demote(target), mentions:[target]})
+      }
+      if(cmd==="protec" && target){ if(!db.protec.includes(target)) db.protec.push(target); if(!db.pro.includes(target)) db.pro.push(target); if(!db.saved.includes(target)) db.saved.push(target); saveDB(); await sock.sendMessage(from,{text:R.protec(target), mentions:[target]}) }
+      if(cmd==="unprotect"){
+        if(senderNum!==OWNER_NUMBER &&!isMe) return await sock.sendMessage(from,{text:R.onlyOwner})
+        if(!target) return await sock.sendMessage(from,{text:R.needTag})
+        db.protec=db.protec.filter(x=>x!==target); db.pro=db.pro.filter(x=>x!==target); db.saved=db.saved.filter(x=>x!==target); saveDB(); await sock.sendMessage(from,{text:R.unprotec(target), mentions:[target]})
+      }
+      if(cmd==="kaio"){
+        if(txt.includes("off")){ db.kaio=db.kaio.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.kaiooff}) }
+        else { if(!db.kaio.includes(from)) db.kaio.push(from); saveDB(); await sock.sendMessage(from,{text:R.kaio}) }
+      }
+      if(cmd==="save" && target){ if(!db.saved.includes(target)) db.saved.push(target); saveDB(); await sock.sendMessage(from,{text:R.save(target), mentions:[target]}) }
+      if(cmd==="pro" && target){ if(!db.pro.includes(target)) db.pro.push(target); saveDB(); await sock.sendMessage(from,{text:R.pro(target), mentions:[target]}) }
       if(cmd==="mute") await sock.sendMessage(from,{text:R.mute})
       if(cmd==="unmute") await sock.sendMessage(from,{text:R.unmute})
       if(cmd==="admin" && meta){ let admins=meta.participants.filter(p=>p.admin).map(p=>p.id); await sock.sendMessage(from,{text:R.admin(admins.map(a=>`@${a.split('@')[0]}`).join('\n')), mentions:admins}) }
       if(cmd==="info" && meta) await sock.sendMessage(from,{text:R.info(meta.subject, meta.participants.length)})
-      if(cmd==="stats" && meta) await sock.sendMessage(from,{text:R.stats(meta.participants.length, meta.participants.filter(p=>p.admin).length)})
       if(cmd==="time") await sock.sendMessage(from,{text:R.time()})
-      if(cmd==="chut" && target){ db.chut[target]=true; saveDB(); await sock.sendMessage(from,{text:R.chut(target), mentions:[target]}) }
-      if(cmd==="unchut" && target){ delete db.chut[target]; saveDB(); await sock.sendMessage(from,{text:R.unchut(target), mentions:[target]}) }
-      if(cmd==="blockadmin" && target){ if(!db.blockadmin.includes(target)) db.blockadmin.push(target); saveDB(); await sock.sendMessage(from,{text:R.blockadmin(target), mentions:[target]}) }
-      if(cmd==="unblockadmin" && target){ db.blockadmin=db.blockadmin.filter(x=>x!==target); saveDB(); await sock.sendMessage(from,{text:R.unblockadmin(target), mentions:[target]}) }
-      if(cmd==="save" && target){ if(!db.saved.includes(target)) db.saved.push(target); saveDB(); await sock.sendMessage(from,{text:R.save(target), mentions:[target]}) }
-      if(cmd==="unsave" && target){ db.saved=db.saved.filter(x=>x!==target); saveDB(); await sock.sendMessage(from,{text:R.unsave(target), mentions:[target]}) }
-      if(cmd==="pro" && target){ if(!db.pro.includes(target)) db.pro.push(target); if(!db.saved.includes(target)) db.saved.push(target); saveDB(); await sock.sendMessage(from,{text:R.pro(target), mentions:[target]}) }
-      if(cmd==="protec" && target){ if(!db.protec.includes(target)) db.protec.push(target); if(!db.pro.includes(target)) db.pro.push(target); if(!db.saved.includes(target)) db.saved.push(target); saveDB(); await sock.sendMessage(from,{text:R.protec(target), mentions:[target]}) }
-      if(cmd==="unprotect" && target){ db.protec=db.protec.filter(x=>x!==target); db.pro=db.pro.filter(x=>x!==target); db.saved=db.saved.filter(x=>x!==target); saveDB(); await sock.sendMessage(from,{text:R.unprotec(target), mentions:[target]}) }
-      if(cmd==="godmode"){ if(txt.includes("off")){ db.godmode=db.godmode.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.godmodeoff}) } else { if(!db.godmode.includes(from)) db.godmode.push(from); saveDB(); await sock.sendMessage(from,{text:R.godmode}) } }
-      if(cmd==="kaio"){ if(txt.includes("off")){ db.kaio=db.kaio.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.kaiooff}) } else { if(!db.kaio.includes(from)) db.kaio.push(from); saveDB(); await sock.sendMessage(from,{text:R.kaio}) } }
-      if(cmd==="antilink") await sock.sendMessage(from,{text:txt.includes("off")?R.antilinkoff:R.antilink})
-      if(cmd==="antisticker") await sock.sendMessage(from,{text:txt.includes("off")?R.antistickeroff:R.antisticker})
-      if(cmd==="antistatus") await sock.sendMessage(from,{text:txt.includes("off")?R.antistatusoff:R.antistatus})
-      if(cmd==="welcome"){ if(txt.includes("off")){ db.welcome=db.welcome.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.welcomeoff}) } else { if(!db.welcome.includes(from)) db.welcome.push(from); saveDB(); await sock.sendMessage(from,{text:R.welcome}) } }
-      if(cmd==="ghost") await sock.sendMessage(from,{text:txt.includes("off")?R.ghostoff:R.ghost})
-      if(cmd==="pt") await sock.sendMessage(from,{text:txt.includes("off")?R.ptoff:R.pt})
-      if(cmd==="boy") await sock.sendMessage(from,{text:R.boy})
-      if(cmd==="rdm") await sock.sendMessage(from,{text:R.rdm(Math.floor(Math.random()*100)+1)})
       if(["black","menu","b"].includes(cmd)){
-        const menuText=getMenu()
-        if(fs.existsSync('./menu.jpg')) await sock.sendMessage(from,{image:fs.readFileSync('./menu.jpg'), caption:menuText},{quoted:m})
-        else await sock.sendMessage(from,{text:menuText},{quoted:m})
+        if(fs.existsSync('./menu.jpg')) await sock.sendMessage(from,{image:fs.readFileSync('./menu.jpg'), caption:getMenu()},{quoted:m})
+        else await sock.sendMessage(from,{text:getMenu()},{quoted:m})
       }
-      if(cmd==="amis" && target){ if(!senderNum.includes(OWNER_NUMBER) &&!isMe){ return await sock.sendMessage(from,{text:R.onlyOwner}) } let n=target.replace(/[^0-9]/g,''); db.amis[n]=true; db.amis[target]=true; saveDB(); await sock.sendMessage(from,{text:R.amis(target), mentions:[target]}) }
-      if(cmd==="noami" && target){ if(!senderNum.includes(OWNER_NUMBER) &&!isMe){ return await sock.sendMessage(from,{text:R.onlyOwner}) } let n=target.replace(/[^0-9]/g,''); delete db.amis[n]; delete db.amis[target]; saveDB(); await sock.sendMessage(from,{text:R.noami(target), mentions:[target]}) }
-    })
-
-    sock.ev.on('messages.update', async(updates)=>{
-      for(let update of updates){
-        if(update.update.message === null && messageStore[update.key.id]){
-          let stored = messageStore[update.key.id]
-          if(db.kaio.includes(stored.from)){
-            let sender = stored.sender
-            await sock.sendMessage(stored.from, {text: `🔥 *KAIO-KEN! MESSAGE SUPPRIMÉ!* 🔥\n\n@${sender.split('@')[0]} a supprimé: \n\n"${stored.text}"`, mentions:[sender]})
-          }
-          delete messageStore[update.key.id]
-        }
-      }
+      if(cmd==="amis" && target){ if(senderNum!==OWNER_NUMBER &&!isMe) return; let n=target.replace(/[^0-9]/g,''); db.amis[n]=true; saveDB(); await sock.sendMessage(from,{text:R.amis(target), mentions:[target]}) }
+      if(cmd==="rdm") await sock.sendMessage(from,{text:R.rdm(Math.floor(Math.random()*100)+1)})
+      if(cmd==="boy") await sock.sendMessage(from,{text:R.boy})
     })
 
     sock.ev.on('group-participants.update', async(update)=>{
       try{
         const { id, participants, action, author } = update
         if(action==='add'){
-          for(let p of participants){
-            let meta = await sock.groupMetadata(id).catch(()=>({subject:"mon royaume"}))
-            if(db.welcome.includes(id)) await sock.sendMessage(id, {text: R.welcomeMsg(p, meta.subject), mentions:[p]})
+          let botId = sock.user.id.split(':')[0] + '@s.whatsapp.net'
+          let isBotAdded = participants.includes(botId) || participants.includes(sock.user.id) || participants.some(p => sock.user.id.includes(p.split('@')[0]))
+          if(isBotAdded){
+            await new Promise(r=>setTimeout(r,1500))
+            let meta = await sock.groupMetadata(id).catch(()=>({subject:"ce royaume"}))
+            await sock.sendMessage(id, {text: `꧁༒☬ BLACK GOKU EST ARRIVÉ ☬༒꧂\n\n🔥 Merci de m'avoir ajouté dans *${meta.subject}*!\n\n👑 Tape *₩menu* pour voir mes pouvoirs\n\n⚠️ Mettez-moi ADMIN!`})
+            return
           }
         }
         if(action==='remove'){
           for(let removed of participants){
             let num = removed.replace(/[^0-9]/g,'')
-            let isProtected = db.protec.includes(removed) || db.pro.includes(removed) || db.saved.includes(removed) || db.amis[num] || num.includes(OWNER_NUMBER)
-            if(isProtected){
+            let isProtected = db.protec.includes(removed) || db.pro.includes(removed) || db.saved.includes(removed) || db.amis[num] || num===OWNER_NUMBER
+            let isKaio = db.kaio.includes(id)
+            if(isProtected || isKaio){
               let meta = await sock.groupMetadata(id).catch(()=>null)
               if(!meta) continue
-              let botIsAdmin = meta.participants.find(p=>p.id.includes(sock.user.id.split(':')[0]))?.admin
-              if(!botIsAdmin){ await sock.sendMessage(id, {text: R.protecFail}); continue }
-              await sock.groupParticipantsUpdate(id, [removed], "add").catch(()=>{})
-              await new Promise(r=>setTimeout(r,1200))
-              if(author && author!==removed){
-                let authorNum = author.replace(/[^0-9]/g,'')
-                if(!db.protec.includes(author) &&!authorNum.includes(OWNER_NUMBER)){
+              let botIsAdmin = meta.participants.find(p=>p.id===sock.user.id || p.id.includes(sock.user.id.split(':')[0]))?.admin
+              if(!botIsAdmin) continue
+              let authorNum = author? author.replace(/[^0-9]/g,'') : ''
+              let authorIsOwner = authorNum===OWNER_NUMBER || db.protec.includes(author)
+              if(isProtected || (isKaio &&!authorIsOwner)){
+                await sock.groupParticipantsUpdate(id, [removed], "add").catch(()=>{})
+                await new Promise(r=>setTimeout(r,1000))
+                if(author && author!==removed &&!authorIsOwner){
                   await sock.groupParticipantsUpdate(id, [author], "remove").catch(()=>{})
                   await sock.sendMessage(id, {text: R.protecTriggered(removed, author), mentions:[removed, author]})
                 }
@@ -330,18 +335,17 @@ async function startBot(){
         }
         if(action==='demote'){
           for(let demoted of participants){
-            let num = demoted.replace(/[^0-9]/g,'')
-            let isProtected = db.protec.includes(demoted) || db.pro.includes(demoted) || db.saved.includes(demoted) || num.includes(OWNER_NUMBER)
-            if(isProtected){
+            let isAutoPromote = db.autoPromote[id]?.includes(demoted)
+            let isProtec = db.protec.includes(demoted) || db.pro.includes(demoted) || db.saved.includes(demoted) || isAutoPromote
+            if(isProtec){
               let meta = await sock.groupMetadata(id).catch(()=>null)
               if(!meta) continue
-              let botIsAdmin = meta.participants.find(p=>p.id.includes(sock.user.id.split(':')[0]))?.admin
-              if(!botIsAdmin){ await sock.sendMessage(id, {text: R.protecFail}); continue }
+              let botIsAdmin = meta.participants.find(p=>p.id===sock.user.id || p.id.includes(sock.user.id.split(':')[0]))?.admin
+              if(!botIsAdmin) continue
               await sock.groupParticipantsUpdate(id, [demoted], "promote").catch(()=>{})
-              await new Promise(r=>setTimeout(r,800))
-              if(author && author!==demoted){
+              if(author){
                 let authorNum = author.replace(/[^0-9]/g,'')
-                if(!db.protec.includes(author) &&!authorNum.includes(OWNER_NUMBER)){
+                if(authorNum!==OWNER_NUMBER &&!db.protec.includes(author)){
                   await sock.groupParticipantsUpdate(id, [author], "demote").catch(()=>{})
                   await sock.sendMessage(id, {text: R.protecDemote(demoted, author), mentions:[demoted, author]})
                 }
@@ -349,13 +353,18 @@ async function startBot(){
             }
           }
         }
+        if(action==='promote'){
+          for(let promoted of participants){
+            let isAutoDemote = db.autoDemote[id]?.includes(promoted)
+            if(isAutoDemote){
+              await sock.groupParticipantsUpdate(id, [promoted], "demote").catch(()=>{})
+              await sock.sendMessage(id, {text: `💔 @${promoted.split('@')[0]} doit rester sans admin!`, mentions:[promoted]})
+            }
+          }
+        }
       }catch(e){ console.log("PROTEC ERR", e) }
     })
-  }catch(e){
-    console.log("START ERROR", e)
-    setTimeout(startBot,5000)
-  }
+  }catch(e){ console.log("START ERROR", e); setTimeout(startBot,5000) }
 }
 startBot()
 app.listen(PORT, '0.0.0.0', ()=>console.log("BLACK GOKU LIVE "+PORT))
-setInterval(()=>{ console.log("H24 ping keep alive") }, 10*60*1000)
