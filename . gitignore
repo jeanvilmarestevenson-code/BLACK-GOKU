@@ -1,8 +1,7 @@
 node_modules/
 npm-debug.log
 .env
-auth/
 .DS_Store
+black_db.json
+auth_info/
 *.log
-auth2/*
-!auth2/creds.json
