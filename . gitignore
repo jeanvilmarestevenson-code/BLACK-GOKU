@@ -4,13 +4,5 @@ npm-debug.log
 auth/
 .DS_Store
 *.log
-
-# === FIX H24 GRATUIT ===
-# On GARDE auth2/creds.json, on ignore le reste
-
-!auth2/
+auth2/*
 !auth2/creds.json
-auth2/app-state*
-auth2/pre-keys/
-auth2/session-*
-auth2/sender-key*
