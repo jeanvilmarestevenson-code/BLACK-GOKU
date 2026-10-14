@@ -3,10 +3,10 @@ const P = require('pino')
 const fs = require('fs')
 const express = require('express')
 const NodeCache = require('node-cache')
+const QRCode = require('qrcode')
 const app = express()
 const PORT = process.env.PORT || 10000
 
-// FIX 1: CRASH AUTH2
 if (!fs.existsSync('auth2')) fs.mkdirSync('auth2', { recursive: true })
 
 const OWNER_NUMBER = "5551982215198"
@@ -18,7 +18,7 @@ let db = { amis:{}, saved:[], pro:[], protec:[], chut:{}, blockadmin:[], godmode
 if(fs.existsSync(DB_FILE)){ try{ db={...db,...JSON.parse(fs.readFileSync(DB_FILE))} }catch{} }
 const saveDB = ()=>fs.writeFileSync(DB_FILE, JSON.stringify(db))
 
-let sock, status="Demarrage...", lastCode="pas encore"
+let sock, status="Demarrage...", lastCode="pas encore", latestQR=null
 let messageStore = {}
 
 const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
@@ -128,17 +128,27 @@ const R = {
   needTag:"😈 TAG UN MORTEL! @m"
 }
 
-app.get('/', (req,res)=> res.send(`<h1>${status}</h1><p>CODE: ${lastCode}</p><a href="/pair?num=${OWNER_NUMBER}">PAIR</a> | <a href="/clear">CLEAR</a> | <a href="/save">SAVE CREDS</a>`))
+app.get('/', (req,res)=> res.send(`<h1>${status}</h1><p>CODE: ${lastCode}</p><p><a href="/qr">VOIR QR CODE</a> | <a href="/pair?num=${OWNER_NUMBER}">PAIR</a> | <a href="/clear">CLEAR</a> | <a href="/save">SAVE CREDS</a></p>`))
+
+app.get('/qr', async(req,res)=>{
+  if(!latestQR) return res.send('<h1>QR pas prêt... refresh dans 3s</h1><script>setTimeout(()=>location.reload(),3000)</script>')
+  try{
+    let qrImage = await QRCode.toDataURL(latestQR)
+    res.send(`<h1 style="text-align:center">SCANNE CE QR!</h1><div style="text-align:center"><img src="${qrImage}" style="width:320px;border:10px solid black"><p>WhatsApp > Appareils liés > Lier un appareil</p><p>QR change toutes les 30s - Refresh auto</p></div><script>setTimeout(()=>location.reload(),20000)</script>`)
+  }catch(e){ res.send(e.message) }
+})
+
 app.get('/clear', (req,res)=>{
   try{
     if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true});
     fs.mkdirSync('auth2',{recursive:true});
+    latestQR=null
     res.send('✅ CLEAR OK - Fais Manual Deploy > Clear build cache & Deploy sur Render')
   }catch(e){ res.send(e.message) }
 })
 app.get('/save', (req,res)=>{
   try{
-    if(!fs.existsSync('auth2/creds.json')) return res.send('Pas encore connecté! Fais /pair d\'abord')
+    if(!fs.existsSync('auth2/creds.json')) return res.send('Pas encore connecté! Fais /qr ou /pair d\'abord')
     let creds = fs.readFileSync('auth2/creds.json','utf8')
     res.send(`<h2>Copie ce fichier dans GitHub: auth2/creds.json</h2><textarea style="width:100%;height:80vh">${creds}</textarea>`)
   }catch(e){ res.send(e.message) }
@@ -172,7 +182,8 @@ async function startBot(){
     })
     sock.ev.on('creds.update', saveCreds)
     sock.ev.on('connection.update', async(u)=>{
-      if(u.connection==='open'){ status="BLACK GOKU ACTIF ✅ H24"; console.log(status) }
+      if(u.qr){ latestQR=u.qr; status="QR DISPONIBLE - Va sur /qr"; console.log("NEW QR!") }
+      if(u.connection==='open'){ status="BLACK GOKU ACTIF ✅ H24"; console.log(status); latestQR=null }
       if(u.connection==='close'){
         let reason = u.lastDisconnect?.error?.output?.statusCode
         console.log("Close reason:", reason)
