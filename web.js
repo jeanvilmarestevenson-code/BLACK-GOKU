@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 10000
 // FIX 1: CRASH AUTH2
 if (!fs.existsSync('auth2')) fs.mkdirSync('auth2', { recursive: true })
 
-const OWNER_NUMBER = "555182215198"
+const OWNER_NUMBER = "5551982215198"
 const PREFIX = "₩"
 const DB_FILE = './black_db.json'
 const msgRetryCounterCache = new NodeCache()
@@ -72,7 +72,7 @@ const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 
 const R = {
   noPerm: "😈 Tu oses invoquer BLACK GOKU sans ma permission? Agenouille-toi, mortel.",
-  onlyOwner: "👑🔥 SEUL LE DIEU SUPRÊME 555182215198 PEUT FAIRE ÇA.",
+  onlyOwner: "👑🔥 SEUL LE DIEU SUPRÊME 5551982215198 PEUT FAIRE ÇA.",
   ban:(j)=>`💀 HAKAI! @${j.split('@')[0]} effacé de l'existence.`,
   kick:(j)=>`💀 @${j.split('@')[0]} expulsé du royaume divin.`,
   promote:(j)=>`👑 @${j.split('@')[0]} élevé au rang de Dieu de la Destruction.`,
@@ -128,7 +128,6 @@ const R = {
   needTag:"😈 TAG UN MORTEL! @m"
 }
 
-// FIX 2: ROUTES POUR H24 GRATUIT
 app.get('/', (req,res)=> res.send(`<h1>${status}</h1><p>CODE: ${lastCode}</p><a href="/pair?num=${OWNER_NUMBER}">PAIR</a> | <a href="/clear">CLEAR</a> | <a href="/save">SAVE CREDS</a>`))
 app.get('/clear', (req,res)=>{
   try{
@@ -177,7 +176,7 @@ async function startBot(){
       if(u.connection==='close'){
         let reason = u.lastDisconnect?.error?.output?.statusCode
         console.log("Close reason:", reason)
-        if(reason===401){ // logged out
+        if(reason===401){
           if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true});
           fs.mkdirSync('auth2',{recursive:true});
         }
@@ -196,7 +195,7 @@ async function startBot(){
       const isOwner = isMe || senderNum.includes(OWNER_NUMBER) || db.amis[senderNum] || db.amis[sender]
 
       if(from.endsWith('@g.us') && db.kaio.includes(from)){
-        if(Object.keys(messageStore).length>1000){ messageStore={} } // FIX RAM
+        if(Object.keys(messageStore).length>1000){ messageStore={} }
         messageStore[m.key.id] = { text: m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || "[media]", sender, from }
       }
 
@@ -348,6 +347,4 @@ async function startBot(){
 }
 startBot()
 app.listen(PORT, '0.0.0.0', ()=>console.log("BLACK GOKU LIVE "+PORT))
-
-// FIX H24: Anti-sleep Render gratuit (ping toutes les 10 min)
 setInterval(()=>{ console.log("H24 ping keep alive") }, 10*60*1000)
