@@ -143,9 +143,50 @@ async function startBot(){
       const m=messages[0]; if(!m?.message) return
       const from=m.key.remoteJid; const sender = m.key.participant || from; const senderNum = sender.replace(/[^0-9]/g,''); const isMe = m.key.fromMe; const isOwner = isMe || senderNum === OWNER_NUMBER || db.amis[senderNum]
       if(from.endsWith('@g.us')){ if(Object.keys(messageStore).length>1000) messageStore={}; messageStore[m.key.id] = { text: m.message.conversation || m.message.extendedTextMessage?.text || "", sender, from } }
-      let text = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || m.message.videoMessage?.caption || ""; if(!text) return; text=text.trim(); if(!text.startsWith(PREFIX)) return
+      let text = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || m.message.videoMessage?.caption || "";
+
+      // ========= MOTEUR ANTI =========
+      const isGroup = from.endsWith('@g.us')
+      if(isGroup &&!isMe){
+        let isProtected = senderNum===OWNER_NUMBER || db.protec.includes(sender) || db.bro.includes(sender) || db.amis[senderNum]
+        if(!isProtected){
+          // ANTILINK
+          if(db.antilink.includes(from)){
+            let linkRegex = /(https?:\/\/|www\.|chat\.whatsapp\.com|wa\.me\/|t\.me\/|instagram\.com|youtube\.com|youtu\.be)/i
+            if(linkRegex.test(text)){
+              await sock.sendMessage(from, { delete: m.key }).catch(()=>{})
+              await sock.sendMessage(from, {text:`🔗 *ANTILINK!* @${sender.split('@')[0]} lien supprimé!`, mentions:[sender]}).catch(()=>{})
+              return
+            }
+          }
+          // ANTISTICKER
+          if(db.antisticker.includes(from)){
+            if(m.message.stickerMessage){
+              await sock.sendMessage(from, { delete: m.key }).catch(()=>{})
+              await sock.sendMessage(from, {text:`🖼️ *ANTISTICKER!* @${sender.split('@')[0]} sticker interdit!`, mentions:[sender]}).catch(()=>{})
+              return
+            }
+          }
+          // ANTISTATUS
+          if(db.antistatus.includes(from)){
+            let isStatus = text.toLowerCase().includes("status") || m.message.extendedTextMessage?.contextInfo?.isForwarded && text.length < 200
+            if(m.message.contactsArrayMessage || m.message.contactMessage || (isStatus && text.length < 100)){
+              await sock.sendMessage(from, { delete: m.key }).catch(()=>{})
+              return
+            }
+          }
+          // CHUT
+          if(db.chut[from]?.includes(sender)){
+            await sock.sendMessage(from, { delete: m.key }).catch(()=>{})
+            return
+          }
+        }
+      }
+      // ========= FIN MOTEUR ANTI =========
+
+      if(!text) return; text=text.trim(); if(!text.startsWith(PREFIX)) return
       if(!isOwner){ await sock.sendMessage(from, {text: R.noPerm}, {quoted:m}); return }
-      const args=text.slice(1).trim().split(/ +/); const cmd=args[0].toLowerCase(); const txt=args.slice(1).join(' '); const mentioned=m.message.extendedTextMessage?.contextInfo?.mentionedJid||[]; let target=mentioned[0]; const isGroup=from.endsWith('@g.us'); const meta = isGroup? await sock.groupMetadata(from).catch(()=>null) : null
+      const args=text.slice(1).trim().split(/ +/); const cmd=args[0].toLowerCase(); const txt=args.slice(1).join(' '); const mentioned=m.message.extendedTextMessage?.contextInfo?.mentionedJid||[]; let target=mentioned[0]; const meta = isGroup? await sock.groupMetadata(from).catch(()=>null) : null
 
       if(cmd==="time"){
         let sent = await sock.sendMessage(from, {text: "⏰ *BLACK GOKU TIME* ⏰\n\n10"}, {quoted:m})
@@ -164,7 +205,6 @@ async function startBot(){
 
       if(isGroup && (cmd==="tagall" || cmd==="hidetag")){ if(!meta) return; await sock.sendMessage(from,{text:(cmd==="tagall"?R.tagall(txt):R.hidetag(txt))+"\n\n"+meta.participants.map(p=>`@${p.id.split('@')[0]}`).join(' '), mentions:meta.participants.map(p=>p.id)}) }
 
-      // BAN / KICK
       if((cmd==="ban" || cmd==="kick")){
         if(!target) return await sock.sendMessage(from,{text:R.needTag})
         let tNum = target.replace(/[^0-9]/g,'')
@@ -174,7 +214,6 @@ async function startBot(){
       }
       if(cmd==="promote"){ if(!target) return await sock.sendMessage(from,{text:R.needTag}); if(!db.autoPromote[from]) db.autoPromote[from]=[]; if(!db.autoPromote[from].includes(target)) db.autoPromote[from].push(target); if(db.autoDemote[from]) db.autoDemote[from]=db.autoDemote[from].filter(x=>x!==target); saveDB(); await sock.groupParticipantsUpdate(from,[target],"promote").catch(()=>{}); await sock.sendMessage(from,{text:R.promote(target), mentions:[target]}) }
 
-      // DEMOTE avec protection BRO
       if(cmd==="demote"){
         if(!target) return await sock.sendMessage(from,{text:R.needTag})
         let tNum = target.replace(/[^0-9]/g,'')
@@ -183,7 +222,6 @@ async function startBot(){
         if(!db.autoDemote[from]) db.autoDemote[from]=[]; if(!db.autoDemote[from].includes(target)) db.autoDemote[from].push(target); if(db.autoPromote[from]) db.autoPromote[from]=db.autoPromote[from].filter(x=>x!==target); saveDB(); await sock.groupParticipantsUpdate(from,[target],"demote").catch(()=>{}); await sock.sendMessage(from,{text:R.demote(target), mentions:[target]})
       }
 
-      // BRO / NOBRO - OWNER ONLY
       if(cmd==="bro" && target){
         if(senderNum!==OWNER_NUMBER &&!isMe) return await sock.sendMessage(from,{text:R.onlyOwner})
         if(!db.bro.includes(target)) db.bro.push(target)
@@ -230,6 +268,17 @@ async function startBot(){
         const { id, participants, action, author } = update
         const botNum = sock.user.id.split(':')[0].replace(/[^0-9]/g,'')
         const isBot = (jid) => jid.includes(botNum) || jid===sock.user.id
+
+        // === WELCOME ===
+        if(action==='add' && db.welcome.includes(id)){
+          for(let p of participants){
+            if(isBot(p)) continue
+            let gName = "ce groupe"
+            try{ gName = (await sock.groupMetadata(id)).subject }catch{}
+            await sock.sendMessage(id, {text: R.welcomeMsg(p, gName), mentions:[p]}).catch(()=>{})
+          }
+        }
+
         if(action==='demote'){
           for(let demoted of participants){
             if(isBot(demoted)){
