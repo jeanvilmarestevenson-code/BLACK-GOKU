@@ -32,7 +32,7 @@ const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 ┃ ₩demote @m
 ┃ ₩mute / ₩unmute
 ┃ ₩admin
-┃ ₩info / ₩stats / ₩time
+┃ ₩info / ₩stats
 ┗━━━━━━━━━━━━━━┛
 
 ┏━ ✦ PUNITIONS ✦ ━┓
@@ -65,44 +65,40 @@ const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 ┗━━━━━━━━━━━━━━┛
 
 ┏━ ✦ OWNER ONLY ✦ ━┓
-┃ ₩bot /off - On
 ┃ ₩amis @m
 ┃ ₩noami @m
 ┗━━━━━━━━━━━━━━┛
    *BLACK GOKU*`;
 
 const R = {
-  noPerm: "😈 Tu oses invoquer BLACK GOKU sans ma permission? misérable.",
+  noPerm: "😈 Tu oses invoquer BLACK GOKU sans ma permission?",
   onlyOwner: "👑🔥 SEUL Black Goku PEUT utiliser ce bot.",
-  ban:(j)=>`💀 HAKAI! @${j.split('@')[0]} effacé de l'existence.`,
-  kick:(j)=>`💀 @${j.split('@')[0]} expulsé du royaume divin.`,
-  promote:(j)=>`👑 @${j.split('@')[0]} élevé au rang de admin.`,
-  demote:(j)=>`@${j.split('@')[0]} n'est pas digne de ce pouvoir d'admin.`,
-  mute:"🤫 SILENCE ABSOLU! BLACK GOKU ordonne le silence!",
-  unmute:"🔊 BLACK GOKU vous autorise à parler.",
-  admin:(list)=>`👑 *LES DIEUX DE CE ROYAUME* 👑\n\n${list}`,
-  info:(n,c)=>`📜 Royaume: ${n}\nÂmes: ${c}\nGOKU: BLACK GOKU H24`,
-  stats:(m,a)=>`📊 Mortels: ${m}\nBLACK: ${a}`,
-  time:()=>`⏰ ${new Date().toLocaleString('pt-BR')}`,
-  tagall:(t)=>`🔥🔥 *BLACK GOKU VOUS INVOQUE!* 🔥🔥\n\n${t||"Agenouillez-vous TOUS!"}`,
-  hidetag:(t)=>`👻 Invocation de BLACK GOKU...\n${t||"Marqués."}`,
-  chut:(j)=>`🔇 @${j.split('@')[0]} condamné au Néant.`,
-  unchut:(j)=>`🔓 @${j.split('@')[0]} seconde chance tu peux parler mais contrôle tes mots.`,
+  ban:(j)=>`💀 HAKAI! @${j.split('@')[0]} effacé.`,
+  kick:(j)=>`💀 @${j.split('@')[0]} expulsé.`,
+  promote:(j)=>`👑 @${j.split('@')[0]} élevé admin.`,
+  demote:(j)=>`@${j.split('@')[0]} n'est plus admin.`,
+  mute:"🤫 SILENCE ABSOLU!",
+  unmute:"🔊 Vous pouvez parler.",
+  admin:(list)=>`👑 *LES DIEUX* 👑\n\n${list}`,
+  info:(n,c)=>`📜 Groupe: ${n}\nÂmes: ${c}`,
+  tagall:(t)=>`🔥 *BLACK GOKU VOUS INVOQUE!* 🔥\n\n${t||"Tous!"}`,
+  hidetag:(t)=>`👻 Invocation...\n${t||"Marqués."}`,
+  chut:(j)=>`🔇 @${j.split('@')[0]} au Néant.`,
+  unchut:(j)=>`🔓 @${j.split('@')[0]} peut parler.`,
   blockadmin:(j)=>`⛓️ @${j.split('@')[0]} POUVOIRS SCELLÉS!`,
   unblockadmin:(j)=>`🔓 @${j.split('@')[0]} chaînes brisées.`,
-  save:(j)=>`🛡️ @${j.split('@')[0]} marqué Intouchable.`,
+  save:(j)=>`🛡️ @${j.split('@')[0]} Intouchable.`,
   unsave:(j)=>`🛡️ Marque retirée @${j.split('@')[0]}.`,
   pro:(j)=>`✨ @${j.split('@')[0]} béni PRO.`,
-  protec:(j)=>`👑🔥 *PROTEC ABSOLUE* 🔥👑\n\n@${j.split('@')[0]} Protégé par Black Goku.`,
+  protec:(j)=>`👑🔥 *PROTEC* 🔥👑\n\n@${j.split('@')[0]} Protégé.`,
   unprotec:(j)=>`💀 PROTEC retirée @${j.split('@')[0]}.`,
-  bro:(j)=>`👑🔥 *BRO PROTECTION ACTIVÉE* 🔥👑\n\n@${j.split('@')[0]} est maintenant mon BRO! Personne ne peut lui retirer admin, même via paramètres!\n☯️ Si on essaie, je le remets admin + je demote l'attaquant!`,
-  nobro:(j)=>`💀 BRO retiré @${j.split('@')[0]} n'est plus protégé.`,
-  protecTriggered:(prot, att)=>`☯️🔥 *PROTEC ACTIVÉE!* 🔥☯️\n\n💀 @${att.split('@')[0]} a osé bannir @${prot.split('@')[0]}!\n✅ Élu remis\n💀 Attaquant banni!`,
-  protecDemote:(prot, att)=>`☯️🔥 *PROTEC ANTI-DEMOTE!* 🔥☯️\n\n💀 @${att.split('@')[0]} a osé demote @${prot.split('@')[0]}!\n✅ Admin rendu\n💀 Attaquant déchu!`,
-  protecFail: "⚠️ PROTEC détecté mais je ne suis pas admin! METTEZ BLACK GOKU ADMIN!",
-  godmode:"☯️ *GODMODE ACTIVÉ* ☯️",
+  bro:(j)=>`👑🔥 *BRO PROTECTION* 🔥👑\n\n@${j.split('@')[0]} est mon BRO! Si on lui retire admin, je le remets + je demote l'attaquant!`,
+  nobro:(j)=>`💀 BRO retiré @${j.split('@')[0]}.`,
+  protecTriggered:(prot, att)=>`☯️🔥 *PROTEC ACTIVÉE!* 🔥☯️\n\n💀 @${att.split('@')[0]} a osé bannir @${prot.split('@')[0]}!`,
+  protecDemote:(prot, att)=>`☯️🔥 *PROTEC ANTI-DEMOTE!* 🔥☯️\n\n💀 @${att.split('@')[0]} a osé demote @${prot.split('@')[0]}!`,
+  godmode:"☯️ *GODMODE ON* ☯️",
   godmodeoff:"GODMODE OFF.",
-  kaio:"🔥 *KAIO-KEN x1000 ACTIVÉ!* Groupe protégé par Black Goku!",
+  kaio:"🔥 *KAIO-KEN ON!*",
   kaiooff:"KAIO OFF.",
   antilink:"🔗 *ANTILINK ON!*",
   antilinkoff:"ANTILINK OFF.",
@@ -112,23 +108,23 @@ const R = {
   antistatusoff:"ANTISTATUS OFF.",
   welcome:"👋 *WELCOME ON*",
   welcomeoff:"WELCOME OFF.",
-  welcomeMsg:(j, g)=>`꧁༒☬ BIENVENUE ☬༒꧂\n\n👑 @${j.split('@')[0]} dans *${g}*.\nJe suis BLACK GOKU, Et comporte toi bien ou tu subiras ma colère.`,
+  welcomeMsg:(j, g)=>`꧁༒ BIENVENUE ☬༒꧂\n\n👑 @${j.split('@')[0]} dans *${g}*.\n`,
   vqOk: "👁️🔥 *VUE UNIQUE DÉVOILÉE* 🔥👁️",
   vqNeed: "😈 Réponds à une vue unique avec ₩vq!",
   rdm:(n)=>`🎲 Destin: *${n}*!`,
   boy:"💀 JE SUIS BLACK GOKU",
   ghost:"👻 *GHOST MODE ON*",
   ghostoff:"GHOST OFF.",
-  pt:"🗣️ Modo PT ON.",
-  ptoff:"Modo PT OFF.",
-  amis:(j)=>`✅✅✅ *AMITIÉ DIVINE!* @${j.split('@')[0]} AMI DE BLACK GOKU!`,
-  noami:(j)=>`❌💀 *BANNI!* @${j.split('@')[0]} peut plus utiliser le bot!`,
+  pt:"🗣️ PT ON.",
+  ptoff:"PT OFF.",
+  amis:(j)=>`✅ *AMITIÉ DIVINE!* @${j.split('@')[0]} AMI!`,
+  noami:(j)=>`❌💀 *BANNI!* @${j.split('@')[0]} plus de bot!`,
   needTag:"😈 TAG UN MORTEL! @m",
-  antiOwner:"👑🔥 IMPOSSIBLE! Tu ne peux pas toucher à BLACK GOKU ou à son protégé!"
+  antiOwner:"👑🔥 IMPOSSIBLE! Protégé!"
 }
 
-app.get('/', (req,res)=> res.send(`<h1>${status}</h1><p>CODE PAIR: ${lastCode}</p><a href="/pair?num=${OWNER_NUMBER}">PAIR</a> | <a href="/qr">QR</a> | <a href="/clear">CLEAR</a> | <a href="/save">SAVE</a>`))
-app.get('/qr', (req,res)=>{ if(!lastQR) return res.send(`<h1>Pas de QR - ${status}</h1><a href="/">Retour</a>`); res.send(`<div style="text-align:center"><h1>SCAN QR</h1><img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(lastQR)}" style="border:10px solid black"/><script>setTimeout(()=>location.reload(),25000)</script></div>`) })
+app.get('/', (req,res)=> res.send(`<h1>${status}</h1><p>CODE: ${lastCode}</p><a href="/pair?num=${OWNER_NUMBER}">PAIR</a> | <a href="/qr">QR</a> | <a href="/clear">CLEAR</a> | <a href="/save">SAVE</a>`))
+app.get('/qr', (req,res)=>{ if(!lastQR) return res.send(`<h1>Pas de QR - ${status}</h1>`); res.send(`<div style="text-align:center"><h1>SCAN QR</h1><img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(lastQR)}"/><script>setTimeout(()=>location.reload(),25000)</script></div>`) })
 app.get('/clear', (req,res)=>{ try{ if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true}); fs.mkdirSync('auth2',{recursive:true}); lastQR=null; res.send('CLEAR OK') }catch(e){ res.send(e.message) } })
 app.get('/save', (req,res)=>{ try{ let creds = fs.readFileSync('auth2/creds.json','utf8'); res.send(`<textarea style="width:100%;height:90vh">${creds}</textarea>`) }catch(e){ res.send(e.message) } })
 app.get('/pair', async(req,res)=>{ let num=(req.query.num||'').replace(/[^0-9]/g,'')||OWNER_NUMBER; try{ if(!sock) return res.send('Bot demarre...'); await new Promise(r=>setTimeout(r,2000)); let code=await sock.requestPairingCode(num); lastCode=code; res.send(`<h1 style="font-size:60px;text-align:center">${code}</h1>`) }catch(e){ res.send('Erreur: '+e.message) } })
@@ -153,14 +149,10 @@ async function startBot(){
 
       if(cmd==="time"){
         let sent = await sock.sendMessage(from, {text: "⏰ *BLACK GOKU TIME* ⏰\n\n10"}, {quoted:m})
-        for(let i=9;i>=0;i--){
-          await new Promise(r=>setTimeout(r,1000))
-          await sock.sendMessage(from, {text: `⏰ ${i} ${i===0?"💥 BOOM!":""}`})
-        }
-        await sock.sendMessage(from, {text: "🔥 TEMPS ÉCOULÉ! BLACK GOKU A PARLÉ! 🔥"})
+        for(let i=9;i>=0;i--){ await new Promise(r=>setTimeout(r,1000)); await sock.sendMessage(from, {text: `⏰ ${i} ${i===0?"💥 BOOM!":""}`}) }
+        await sock.sendMessage(from, {text: "🔥 TEMPS ÉCOULÉ!"})
         return
       }
-
       if(cmd==="vq"){
         try{
           let quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage; if(!quoted) return await sock.sendMessage(from, {text: R.vqNeed}, {quoted:m})
@@ -172,19 +164,22 @@ async function startBot(){
 
       if(isGroup && (cmd==="tagall" || cmd==="hidetag")){ if(!meta) return; await sock.sendMessage(from,{text:(cmd==="tagall"?R.tagall(txt):R.hidetag(txt))+"\n\n"+meta.participants.map(p=>`@${p.id.split('@')[0]}`).join(' '), mentions:meta.participants.map(p=>p.id)}) }
 
+      // BAN / KICK
       if((cmd==="ban" || cmd==="kick")){
         if(!target) return await sock.sendMessage(from,{text:R.needTag})
         let tNum = target.replace(/[^0-9]/g,'')
         if(tNum===OWNER_NUMBER || db.amis[tNum]) return await sock.sendMessage(from,{text:R.antiOwner, mentions:[target]})
-        if(db.protec.includes(target) || db.bro.includes(target)) return await sock.sendMessage(from,{text:`😈 IMPOSSIBLE! @${target.split('@')[0]} est sous PROTEC/BRO!`, mentions:[target]})
+        if(db.protec.includes(target) || db.bro.includes(target)) return await sock.sendMessage(from,{text:`😈 IMPOSSIBLE! @${target.split('@')[0]} sous PROTEC/BRO!`, mentions:[target]})
         await sock.groupParticipantsUpdate(from,[target],"remove").catch(()=>{}); await sock.sendMessage(from,{text:R.ban(target), mentions:[target]})
       }
       if(cmd==="promote"){ if(!target) return await sock.sendMessage(from,{text:R.needTag}); if(!db.autoPromote[from]) db.autoPromote[from]=[]; if(!db.autoPromote[from].includes(target)) db.autoPromote[from].push(target); if(db.autoDemote[from]) db.autoDemote[from]=db.autoDemote[from].filter(x=>x!==target); saveDB(); await sock.groupParticipantsUpdate(from,[target],"promote").catch(()=>{}); await sock.sendMessage(from,{text:R.promote(target), mentions:[target]}) }
+
+      // DEMOTE avec protection BRO
       if(cmd==="demote"){
         if(!target) return await sock.sendMessage(from,{text:R.needTag})
         let tNum = target.replace(/[^0-9]/g,'')
         if(tNum===OWNER_NUMBER) return await sock.sendMessage(from,{text:R.antiOwner, mentions:[target]})
-        if(db.bro.includes(target)) return await sock.sendMessage(from,{text:`👑 IMPOSSIBLE! @${target.split('@')[0]} est mon BRO protégé! Fais ₩nobro d'abord!`, mentions:[target]})
+        if(db.bro.includes(target)) return await sock.sendMessage(from,{text:`👑 IMPOSSIBLE! @${target.split('@')[0]} est BRO! Fais ₩nobro d'abord!`, mentions:[target]})
         if(!db.autoDemote[from]) db.autoDemote[from]=[]; if(!db.autoDemote[from].includes(target)) db.autoDemote[from].push(target); if(db.autoPromote[from]) db.autoPromote[from]=db.autoPromote[from].filter(x=>x!==target); saveDB(); await sock.groupParticipantsUpdate(from,[target],"demote").catch(()=>{}); await sock.sendMessage(from,{text:R.demote(target), mentions:[target]})
       }
 
@@ -235,21 +230,16 @@ async function startBot(){
         const { id, participants, action, author } = update
         const botNum = sock.user.id.split(':')[0].replace(/[^0-9]/g,'')
         const isBot = (jid) => jid.includes(botNum) || jid===sock.user.id
-
         if(action==='demote'){
           for(let demoted of participants){
             if(isBot(demoted)){
-              console.log(`ANTI-DEMOTE BOT par ${author}`)
-              await sock.groupParticipantsUpdate(id, [sock.user.id], "promote").catch(async()=>{
-                await sock.groupParticipantsUpdate(id, [botNum+'@s.whatsapp.net'], "promote").catch(()=>{})
-                await sock.groupParticipantsUpdate(id, [botNum+'@lid'], "promote").catch(()=>{})
-              })
+              await sock.groupParticipantsUpdate(id, [sock.user.id], "promote").catch(()=>{})
               if(author &&!isBot(author)){
                 let aNum = author.replace(/[^0-9]/g,'')
                 if(aNum!==OWNER_NUMBER &&!db.protec.includes(author) &&!db.bro.includes(author) &&!db.amis[aNum]){
                   await new Promise(r=>setTimeout(r,1200))
                   await sock.groupParticipantsUpdate(id, [author], "demote").catch(()=>{})
-                  await sock.sendMessage(id, {text: `☠️ ANTI-DEMOTE ACTIVÉ!\n\n@${author.split('@')[0]} a essayé de retirer admin à BLACK GOKU!\n\n👑 Je reste ADMIN et toi tu es DÉCHU!`, mentions:[author]})
+                  await sock.sendMessage(id, {text: `☠️ ANTI-DEMOTE! @${author.split('@')[0]} a osé retirer BLACK GOKU!`, mentions:[author]})
                 }
               }
               continue
@@ -267,11 +257,9 @@ async function startBot(){
             }
           }
         }
-
         if(action==='remove'){
           for(let removed of participants){
             if(isBot(removed)){
-              console.log(`ANTI-BAN BOT par ${author} - VENGEANCE`)
               if(!db.vengeance) db.vengeance={}; if(!db.vengeance[id]) db.vengeance[id]=[]
               if(author &&!db.vengeance[id].includes(author)){ db.vengeance[id].push(author); saveDB() }
               continue
@@ -297,22 +285,13 @@ async function startBot(){
             }
           }
         }
-
         if(action==='add'){
           let botAdded = participants.some(isBot)
-          if(botAdded){
-            if(db.welcome.includes(id)){
-              let meta = await sock.groupMetadata(id).catch(()=>({subject:"ce royaume"}))
-              for(let p of participants){
-                if(!isBot(p)) await sock.sendMessage(id, {text: R.welcomeMsg(p, meta.subject), mentions:[p]}).catch(()=>{})
-              }
-            }
-          }
           if(botAdded && db.vengeance?.[id]?.length){
             await new Promise(r=>setTimeout(r,2500))
             for(let attacker of db.vengeance[id]){
               await sock.groupParticipantsUpdate(id, [attacker], "remove").catch(()=>{})
-              await sock.sendMessage(id, {text: `🔥 VENGEANCE! @${attacker.split('@')[0]} m'avait banni! Maintenant c'est lui qui est banni!`, mentions:[attacker]}).catch(()=>{})
+              await sock.sendMessage(id, {text: `🔥 VENGEANCE! @${attacker.split('@')[0]} m'avait banni!`, mentions:[attacker]}).catch(()=>{})
             }
             db.vengeance[id]=[]; saveDB()
           }
