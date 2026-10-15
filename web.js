@@ -23,6 +23,7 @@ const saveDB = ()=>{ try{ fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2))
 let sock, status="Demarrage...", lastCode="pas encore"
 let lastQR = null
 let messageStore = {}
+let groupStats = {}
 
 const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 
@@ -80,10 +81,8 @@ const R = {
   kick:(j)=>`💀 @${j.split('@')[0]} expulsé.`,
   promote:(j)=>`👑 @${j.split('@')[0]} élevé admin.`,
   demote:(j)=>`@${j.split('@')[0]} n'est plus admin.`,
-  mute:"🤫 SILENCE ABSOLU!",
-  unmute:"🔊 Vous pouvez parler.",
-  admin:(list)=>`👑 *LES ADMINS* 👑\n\n${list}`,
-  info:(n,c)=>`📜 Groupe: ${n}\nÂmes: ${c}`,
+  mute:"🤫 *GROUPE FERMÉ!* 🔒\n\nSeuls les admins peuvent écrire maintenant.",
+  unmute:"🔊 *GROUPE OUVERT!* 🔓\n\nTout le monde peut écrire maintenant.",
   tagall:(t)=>`🔥 *BLACK GOKU VOUS INVOQUE!* 🔥\n\n${t||"Tous!"}`,
   hidetag:(t)=>`👻 Invocation...\n${t||"Marqués."}`,
   chut:(j)=>`🔇 @${j.split('@')[0]} au Néant.`,
@@ -146,9 +145,15 @@ async function startBot(){
       const m=messages[0]; if(!m?.message) return
       const from=m.key.remoteJid; const sender = m.key.participant || from; const senderNum = sender.replace(/[^0-9]/g,''); const isMe = m.key.fromMe;
       const isOwner = isMe || senderNum === OWNER_NUMBER || db.amis[senderNum]
-      if(from.endsWith('@g.us')){ if(Object.keys(messageStore).length>1000) messageStore={}; messageStore[m.key.id] = { text: m.message.conversation || m.message.extendedTextMessage?.text || "", sender, from } }
-      let text = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || m.message.videoMessage?.caption || "";
 
+      if(from.endsWith('@g.us')){
+        if(Object.keys(messageStore).length>1000) messageStore={};
+        messageStore[m.key.id] = { text: m.message.conversation || m.message.extendedTextMessage?.text || "", sender, from }
+        if(!groupStats[from]) groupStats[from] = { total: 0 };
+        groupStats[from].total++;
+      }
+
+      let text = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || m.message.videoMessage?.caption || "";
       const isGroup = from.endsWith('@g.us')
       if(isGroup &&!isMe){
         try{
@@ -181,6 +186,22 @@ async function startBot(){
       if(!text) return; text=text.trim(); if(!text.startsWith(PREFIX)) return
       if(!isOwner){ await sock.sendMessage(from, {text: R.noPerm}, {quoted:m}).catch(()=>{}); return }
       const args=text.slice(1).trim().split(/ +/); const cmd=args[0].toLowerCase(); const txt=args.slice(1).join(' '); const mentioned=m.message.extendedTextMessage?.contextInfo?.mentionedJid||[]; let target=mentioned[0]; const meta = isGroup? await sock.groupMetadata(from).catch(()=>null) : null
+
+      if(cmd==="sticker" || cmd==="s"){
+        try{
+          let q = m.message.extendedTextMessage?.contextInfo?.quotedMessage;
+          let msg = q || m.message;
+          let type = Object.keys(msg)[0];
+          if(type==='imageMessage' || type==='videoMessage'){
+            let buffer = await downloadMediaMessage({key: m.key, message: { [type]: msg[type] } }, 'buffer', {}, {logger: P({level:'silent'}), reuploadRequest: sock.updateMediaMessage})
+            await sock.sendMessage(from, {sticker: buffer}, {quoted:m})
+          } else if(q && (q.imageMessage || q.videoMessage)){
+            let buffer = await downloadMediaMessage({key: {remoteJid: from, id: m.message.extendedTextMessage.contextInfo.stanzaId, participant: m.message.extendedTextMessage.contextInfo.participant}, message: q}, 'buffer', {}, {logger: P({level:'silent'}), reuploadRequest: sock.updateMediaMessage})
+            await sock.sendMessage(from, {sticker: buffer}, {quoted:m})
+          } else { await sock.sendMessage(from, {text:"😈 Envoie une image/vidéo avec ₩s ou réponds à une image!"}, {quoted:m}) }
+        }catch(e){ await sock.sendMessage(from, {text:"❌ Erreur sticker: "+e.message}, {quoted:m}) }
+        return
+      }
 
       if(cmd==="vq"){
         try{
@@ -215,10 +236,69 @@ async function startBot(){
       if(cmd==="welcome"){ if(txt.includes("off")){ db.welcome=db.welcome.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.welcomeoff}) } else { if(!db.welcome.includes(from)) db.welcome.push(from); saveDB(); await sock.sendMessage(from,{text:R.welcome}) } }
       if(cmd==="ghost"){ if(txt.includes("off")){ db.ghost=db.ghost.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.ghostoff}) } else { if(!db.ghost.includes(from)) db.ghost.push(from); saveDB(); await sock.sendMessage(from,{text:R.ghost}) } }
       if(cmd==="pt"){ if(txt.includes("off")){ db.pt=db.pt.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.ptoff}) } else { if(!db.pt.includes(from)) db.pt.push(from); saveDB(); await sock.sendMessage(from,{text:R.pt}) } }
-      if(cmd==="mute") await sock.sendMessage(from,{text:R.mute})
-      if(cmd==="unmute") await sock.sendMessage(from,{text:R.unmute})
-      if(cmd==="admin" && meta){ let admins=meta.participants.filter(p=>p.admin).map(p=>p.id); await sock.sendMessage(from,{text:R.admin(admins.map(a=>`@${a.split('@')[0]}`).join('\n')), mentions:admins}) }
-      if(cmd==="info" && meta) await sock.sendMessage(from,{text:R.info(meta.subject, meta.participants.length)})
+
+      if(cmd==="mute"){
+        try{
+          await sock.groupSettingUpdate(from, 'announcement');
+          if(!db.muted.includes(from)) db.muted.push(from);
+          saveDB();
+          await sock.sendMessage(from,{text:R.mute})
+        }catch(e){ await sock.sendMessage(from,{text:"❌ Bot doit être admin."}) }
+      }
+      if(cmd==="unmute"){
+        try{
+          await sock.groupSettingUpdate(from, 'not_announcement');
+          db.muted=db.muted.filter(x=>x!==from);
+          saveDB();
+          await sock.sendMessage(from,{text:R.unmute})
+        }catch(e){ await sock.sendMessage(from,{text:"❌ Bot doit être admin."}) }
+      }
+
+      if(cmd==="admin" && meta){
+        let admins=meta.participants.filter(p=>p.admin).map(p=>p.id);
+        let list = admins.map((a,i)=>`${i+1}. @${a.split('@')[0]} ${meta.participants.find(p=>p.id===a)?.admin === 'superadmin'? '(Créateur)' : ''}`).join('\n');
+        await sock.sendMessage(from,{text:`👑 *ADMINS (${admins.length})* 👑\n\n${list}`, mentions:admins})
+      }
+
+      if(cmd==="info" && meta){
+        let total = meta.participants.length;
+        let admins = meta.participants.filter(p=>p.admin).length;
+        let stats = groupStats[from] || { total: 0 };
+        let text = `꧁༒ *INFOS GROUPE* ༒꧂
+
+📛 Nom: ${meta.subject}
+👥 Total membres: ${total}
+👑 Admins: ${admins}
+👤 Membres normaux: ${total - admins}
+
+📊 *MESSAGES:
+- Total: ${stats.total}
+
+*BLACK GOKU H24*`;
+        await sock.sendMessage(from,{text:text})
+      }
+
+      if(cmd==="stats"){
+        let uptime = process.uptime();
+        let h = Math.floor(uptime/3600);
+        let m = Math.floor((uptime%3600)/60);
+        let s = Math.floor(uptime%60);
+        let allGroups = Object.keys(groupStats).length;
+        let totalMsgs = Object.values(groupStats).reduce((a,b)=>a+b.total,0);
+        await sock.sendMessage(from,{text:`📊 *STATS BLACK GOKU H24*
+
+⏱️ Allumé depuis: ${h}h ${m}m ${s}s
+👥 Groupes actifs: ${allGroups}
+💬 Messages comptés: ${totalMsgs} (depuis allumage)
+
+💾 DB légère:
+- BRO: ${db.bro.length}
+- PROTEC: ${db.protec.length}
+- AMIS: ${Object.keys(db.amis).length}
+
+*BLACK GOKU*`})
+      }
+
       if(["black","menu","b"].includes(cmd)){ if(fs.existsSync('./menu.jpg')) await sock.sendMessage(from,{image:fs.readFileSync('./menu.jpg'), caption:getMenu()},{quoted:m}); else await sock.sendMessage(from,{text:getMenu()},{quoted:m}) }
       if(cmd==="amis" && target){ if(senderNum!==OWNER_NUMBER &&!isMe) return; let n=target.replace(/[^0-9]/g,''); db.amis[n]=true; saveDB(); await sock.sendMessage(from,{text:R.amis(target), mentions:[target]}) }
       if(cmd==="noami" && target){ if(senderNum!==OWNER_NUMBER &&!isMe) return await sock.sendMessage(from,{text:R.onlyOwner}); let n=target.replace(/[^0-9]/g,''); delete db.amis[n]; saveDB(); await sock.sendMessage(from,{text:R.noami(target), mentions:[target]}) }
