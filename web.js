@@ -71,7 +71,7 @@ const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
    *BLACK GOKU*`;
 
 const R = {
-  noPerm: "Seulmon maître BLACK GOKU peut utiliser ce bot",
+  noPerm: "Seul mon maitre BLACK GOKU peut utiliser ce bot",
   onlyOwner: "👑🔥 SEUL Black Goku PEUT utiliser ce bot.",
   ban:(j)=>`💀 HAKAI! @${j.split('@')[0]} effacé.`,
   kick:(j)=>`💀 @${j.split('@')[0]} expulsé.`,
@@ -108,7 +108,7 @@ const R = {
   antistatusoff:"ANTISTATUS OFF.",
   welcome:"👋 *WELCOME ON*",
   welcomeoff:"WELCOME OFF.",
-  welcomeMsg:(j, g)=>`꧁༒ BIENVENUE ☬༒꧂\n\n👑 @${j.split('@')[0]} dans *${g}*.\nJe suis Black Goku comporte toi bien ou tu subiras ma colère",
+  welcomeMsg:(j, g)=>`꧁༒ BIENVENUE ☬༒꧂\n\n👑 @${j.split('@')[0]} dans *${g}*.\nJe suis Black Goku comporte toi bien ou tu subiras ma colère`,
   vqOk: "👁️🔥 *VUE UNIQUE DÉVOILÉE* 🔥👁️",
   vqNeed: "😈 Réponds à une vue unique avec ₩vq!",
   rdm:(n)=>`🎲 Destin: *${n}*!`,
@@ -146,30 +146,26 @@ async function startBot(){
       if(from.endsWith('@g.us')){ if(Object.keys(messageStore).length>1000) messageStore={}; messageStore[m.key.id] = { text: m.message.conversation || m.message.extendedTextMessage?.text || "", sender, from } }
       let text = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || m.message.videoMessage?.caption || "";
 
-      // ========= MOTEUR ANTI FIX V3 - FORCE MODE =========
       const isGroup = from.endsWith('@g.us')
       if(isGroup &&!isMe){
         try{
-          // ANTILINK
           if(db.antilink.includes(from)){
             let linkRegex = /(https?:\/\/|www\.|chat\.whatsapp\.com|wa\.me\/|t\.me\/|instagram\.com|youtube\.com|youtu\.be)/i
             if(linkRegex.test(text)){
-              console.log(`[ANTILINK] DETECTE ${senderNum}: ${text}`)
+              console.log(`[ANTILINK] DETECTE ${senderNum}`)
               await sock.sendMessage(from, { delete: { remoteJid: from, fromMe: false, id: m.key.id, participant: sender } }).catch(async()=>{
-                await sock.sendMessage(from, { delete: m.key }).catch(e=>console.log("DELETE FAIL", e.message))
+                await sock.sendMessage(from, { delete: m.key }).catch(()=>{})
               })
               await sock.sendMessage(from, {text:`🔗 *ANTILINK!* @${sender.split('@')[0]} lien supprimé!`, mentions:[sender]}).catch(()=>{})
               return
             }
           }
-          // ANTISTICKER
           if(db.antisticker.includes(from) && m.message.stickerMessage){
             console.log(`[ANTISTICKER] DETECTE ${senderNum}`)
             await sock.sendMessage(from, { delete: { remoteJid: from, fromMe: false, id: m.key.id, participant: sender } }).catch(()=>{})
             await sock.sendMessage(from, {text:`🖼️ *ANTISTICKER!* @${sender.split('@')[0]} interdit!`, mentions:[sender]}).catch(()=>{})
             return
           }
-          // ANTISTATUS
           if(db.antistatus.includes(from)){
             if(m.message.contactMessage || m.message.contactsArrayMessage || text.toLowerCase().includes("status")){
               console.log(`[ANTISTATUS] DETECTE`)
@@ -177,14 +173,12 @@ async function startBot(){
               return
             }
           }
-          // CHUT
           if(db.chut[from]?.includes(sender)){
             await sock.sendMessage(from, { delete: { remoteJid: from, fromMe: false, id: m.key.id, participant: sender } }).catch(()=>{})
             return
           }
         }catch(e){ console.log("ANTI ERR", e) }
       }
-      // ========= FIN MOTEUR ANTI =========
 
       if(!text) return; text=text.trim(); if(!text.startsWith(PREFIX)) return
       if(!isOwner){ await sock.sendMessage(from, {text: R.noPerm}, {quoted:m}); return }
@@ -236,12 +230,11 @@ async function startBot(){
     sock.ev.on('group-participants.update', async(update)=>{
       try{
         const { id, participants, action, author } = update
-        console.log(`[EVENT] group-participants.update action=${action} id=${id} welcome=${db.welcome.includes(id)}`)
+        console.log(`[EVENT] ${action} ${id} welcome=${db.welcome.includes(id)}`)
         const botNum = sock.user.id.split(':')[0].replace(/[^0-9]/g,'')
         const isBot = (jid) => jid.includes(botNum) || jid===sock.user.id
 
         if(action==='add' && db.welcome.includes(id)){
-          console.log(`[WELCOME] Triggered for ${id}`)
           for(let p of participants){
             if(isBot(p)) continue
             let gName = "ce groupe"
@@ -254,13 +247,6 @@ async function startBot(){
           for(let demoted of participants){
             if(isBot(demoted)){
               await sock.groupParticipantsUpdate(id, [sock.user.id], "promote").catch(()=>{})
-              if(author &&!isBot(author)){
-                let aNum = author.replace(/[^0-9]/g,'')
-                if(aNum!==OWNER_NUMBER &&!db.protec.includes(author) &&!db.bro.includes(author) &&!db.amis[aNum]){
-                  await new Promise(r=>setTimeout(r,1200))
-                  await sock.groupParticipantsUpdate(id, [author], "demote").catch(()=>{})
-                }
-              }
               continue
             }
             if(db.protec.includes(demoted) || db.bro.includes(demoted) || db.autoPromote[id]?.includes(demoted)){
