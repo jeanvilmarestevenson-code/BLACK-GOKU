@@ -71,7 +71,7 @@ const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
    *BLACK GOKU*`;
 
 const R = {
-  noPerm: "😈 Tu oses invoquer BLACK GOKU sans ma permission? Agenouille-toi, mortel.",
+  noPerm: "😈 Tu oses invoquer BLACK GOKU sans ma permission? misérable.",
   onlyOwner: "👑🔥 SEUL Black Goku PEUT utiliser ce bot.",
   ban:(j)=>`💀 HAKAI! @${j.split('@')[0]} effacé de l'existence.`,
   kick:(j)=>`💀 @${j.split('@')[0]} expulsé du royaume divin.`,
