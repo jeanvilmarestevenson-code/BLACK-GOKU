@@ -13,7 +13,7 @@ const PREFIX = "₩"
 const DB_FILE = './black_db.json'
 const msgRetryCounterCache = new NodeCache()
 
-let db = { amis:{}, saved:[], pro:[], protec:[], chut:{}, blockadmin:[], godmode:[], kaio:[], antilink:[], antisticker:[], antistatus:[], welcome:[], pt:[], ghost:[], muted:[], autoPromote:{}, autoDemote:{}, vengeance:{}, shadow:[] }
+let db = { amis:{}, saved:[], pro:[], protec:[], bro:[], chut:{}, blockadmin:[], godmode:[], kaio:[], antilink:[], antisticker:[], antistatus:[], welcome:[], pt:[], ghost:[], muted:[], autoPromote:{}, autoDemote:{}, vengeance:{}, shadow:[] }
 if(fs.existsSync(DB_FILE)){ try{ db={...db,...JSON.parse(fs.readFileSync(DB_FILE))} }catch{} }
 const saveDB = ()=>fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2))
 
@@ -46,6 +46,7 @@ const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 ┃ ₩save @m / ₩unsave
 ┃ ₩pro @m
 ┃ ₩protec @m / ₩unprotect
+┃ ₩bro @m / ₩nobro @m
 ┃ ₩godmode /off
 ┃ ₩kaio /off
 ┃ ₩antilink /off
@@ -94,6 +95,8 @@ const R = {
   pro:(j)=>`✨ @${j.split('@')[0]} béni PRO.`,
   protec:(j)=>`👑🔥 *PROTEC ABSOLUE* 🔥👑\n\n@${j.split('@')[0]} Protégé par Black Goku.`,
   unprotec:(j)=>`💀 PROTEC retirée @${j.split('@')[0]}.`,
+  bro:(j)=>`👑🔥 *BRO PROTECTION ACTIVÉE* 🔥👑\n\n@${j.split('@')[0]} est maintenant mon BRO! Personne ne peut lui retirer admin, même via paramètres!\n☯️ Si on essaie, je le remets admin + je demote l'attaquant!`,
+  nobro:(j)=>`💀 BRO retiré @${j.split('@')[0]} n'est plus protégé.`,
   protecTriggered:(prot, att)=>`☯️🔥 *PROTEC ACTIVÉE!* 🔥☯️\n\n💀 @${att.split('@')[0]} a osé bannir @${prot.split('@')[0]}!\n✅ Élu remis\n💀 Attaquant banni!`,
   protecDemote:(prot, att)=>`☯️🔥 *PROTEC ANTI-DEMOTE!* 🔥☯️\n\n💀 @${att.split('@')[0]} a osé demote @${prot.split('@')[0]}!\n✅ Admin rendu\n💀 Attaquant déchu!`,
   protecFail: "⚠️ PROTEC détecté mais je ne suis pas admin! METTEZ BLACK GOKU ADMIN!",
@@ -120,7 +123,8 @@ const R = {
   ptoff:"Modo PT OFF.",
   amis:(j)=>`✅✅✅ *AMITIÉ DIVINE!* @${j.split('@')[0]} AMI DE BLACK GOKU!`,
   noami:(j)=>`❌💀 *BANNI!* @${j.split('@')[0]} peut plus utiliser le bot!`,
-  needTag:"😈 TAG UN MORTEL! @m"
+  needTag:"😈 TAG UN MORTEL! @m",
+  antiOwner:"👑🔥 IMPOSSIBLE! Tu ne peux pas toucher à BLACK GOKU ou à son protégé!"
 }
 
 app.get('/', (req,res)=> res.send(`<h1>${status}</h1><p>CODE PAIR: ${lastCode}</p><a href="/pair?num=${OWNER_NUMBER}">PAIR</a> | <a href="/qr">QR</a> | <a href="/clear">CLEAR</a> | <a href="/save">SAVE</a>`))
@@ -167,9 +171,37 @@ async function startBot(){
       }
 
       if(isGroup && (cmd==="tagall" || cmd==="hidetag")){ if(!meta) return; await sock.sendMessage(from,{text:(cmd==="tagall"?R.tagall(txt):R.hidetag(txt))+"\n\n"+meta.participants.map(p=>`@${p.id.split('@')[0]}`).join(' '), mentions:meta.participants.map(p=>p.id)}) }
-      if((cmd==="ban" || cmd==="kick")){ if(!target) return await sock.sendMessage(from,{text:R.needTag}); if(db.protec.includes(target)) return await sock.sendMessage(from,{text:`😈 IMPOSSIBLE! @${target.split('@')[0]} est sous PROTEC!`, mentions:[target]}); await sock.groupParticipantsUpdate(from,[target],"remove").catch(()=>{}); await sock.sendMessage(from,{text:R.ban(target), mentions:[target]}) }
+
+      if((cmd==="ban" || cmd==="kick")){
+        if(!target) return await sock.sendMessage(from,{text:R.needTag})
+        let tNum = target.replace(/[^0-9]/g,'')
+        if(tNum===OWNER_NUMBER || db.amis[tNum]) return await sock.sendMessage(from,{text:R.antiOwner, mentions:[target]})
+        if(db.protec.includes(target) || db.bro.includes(target)) return await sock.sendMessage(from,{text:`😈 IMPOSSIBLE! @${target.split('@')[0]} est sous PROTEC/BRO!`, mentions:[target]})
+        await sock.groupParticipantsUpdate(from,[target],"remove").catch(()=>{}); await sock.sendMessage(from,{text:R.ban(target), mentions:[target]})
+      }
       if(cmd==="promote"){ if(!target) return await sock.sendMessage(from,{text:R.needTag}); if(!db.autoPromote[from]) db.autoPromote[from]=[]; if(!db.autoPromote[from].includes(target)) db.autoPromote[from].push(target); if(db.autoDemote[from]) db.autoDemote[from]=db.autoDemote[from].filter(x=>x!==target); saveDB(); await sock.groupParticipantsUpdate(from,[target],"promote").catch(()=>{}); await sock.sendMessage(from,{text:R.promote(target), mentions:[target]}) }
-      if(cmd==="demote"){ if(!target) return await sock.sendMessage(from,{text:R.needTag}); if(!db.autoDemote[from]) db.autoDemote[from]=[]; if(!db.autoDemote[from].includes(target)) db.autoDemote[from].push(target); if(db.autoPromote[from]) db.autoPromote[from]=db.autoPromote[from].filter(x=>x!==target); saveDB(); await sock.groupParticipantsUpdate(from,[target],"demote").catch(()=>{}); await sock.sendMessage(from,{text:R.demote(target), mentions:[target]}) }
+      if(cmd==="demote"){
+        if(!target) return await sock.sendMessage(from,{text:R.needTag})
+        let tNum = target.replace(/[^0-9]/g,'')
+        if(tNum===OWNER_NUMBER) return await sock.sendMessage(from,{text:R.antiOwner, mentions:[target]})
+        if(db.bro.includes(target)) return await sock.sendMessage(from,{text:`👑 IMPOSSIBLE! @${target.split('@')[0]} est mon BRO protégé! Fais ₩nobro d'abord!`, mentions:[target]})
+        if(!db.autoDemote[from]) db.autoDemote[from]=[]; if(!db.autoDemote[from].includes(target)) db.autoDemote[from].push(target); if(db.autoPromote[from]) db.autoPromote[from]=db.autoPromote[from].filter(x=>x!==target); saveDB(); await sock.groupParticipantsUpdate(from,[target],"demote").catch(()=>{}); await sock.sendMessage(from,{text:R.demote(target), mentions:[target]})
+      }
+
+      // BRO / NOBRO - OWNER ONLY
+      if(cmd==="bro" && target){
+        if(senderNum!==OWNER_NUMBER &&!isMe) return await sock.sendMessage(from,{text:R.onlyOwner})
+        if(!db.bro.includes(target)) db.bro.push(target)
+        if(!db.protec.includes(target)) db.protec.push(target)
+        if(!db.autoPromote[from]) db.autoPromote[from]=[]
+        if(!db.autoPromote[from].includes(target)) db.autoPromote[from].push(target)
+        saveDB(); await sock.groupParticipantsUpdate(from,[target],"promote").catch(()=>{}); await sock.sendMessage(from,{text:R.bro(target), mentions:[target]})
+      }
+      if(cmd==="nobro" && target){
+        if(senderNum!==OWNER_NUMBER &&!isMe) return await sock.sendMessage(from,{text:R.onlyOwner})
+        db.bro=db.bro.filter(x=>x!==target); saveDB(); await sock.sendMessage(from,{text:R.nobro(target), mentions:[target]})
+      }
+
       if(cmd==="protec" && target){ if(!db.protec.includes(target)) db.protec.push(target); if(!db.pro.includes(target)) db.pro.push(target); if(!db.saved.includes(target)) db.saved.push(target); saveDB(); await sock.sendMessage(from,{text:R.protec(target), mentions:[target]}) }
       if(cmd==="unprotect"){ if(senderNum!==OWNER_NUMBER &&!isMe) return await sock.sendMessage(from,{text:R.onlyOwner}); if(!target) return await sock.sendMessage(from,{text:R.needTag}); db.protec=db.protec.filter(x=>x!==target); db.pro=db.pro.filter(x=>x!==target); db.saved=db.saved.filter(x=>x!==target); saveDB(); await sock.sendMessage(from,{text:R.unprotec(target), mentions:[target]}) }
       if(cmd==="kaio"){ if(txt.includes("off")){ db.kaio=db.kaio.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.kaiooff}) } else { if(!db.kaio.includes(from)) db.kaio.push(from); saveDB(); await sock.sendMessage(from,{text:R.kaio}) } }
@@ -214,7 +246,7 @@ async function startBot(){
               })
               if(author &&!isBot(author)){
                 let aNum = author.replace(/[^0-9]/g,'')
-                if(aNum!==OWNER_NUMBER &&!db.protec.includes(author) &&!db.amis[aNum]){
+                if(aNum!==OWNER_NUMBER &&!db.protec.includes(author) &&!db.bro.includes(author) &&!db.amis[aNum]){
                   await new Promise(r=>setTimeout(r,1200))
                   await sock.groupParticipantsUpdate(id, [author], "demote").catch(()=>{})
                   await sock.sendMessage(id, {text: `☠️ ANTI-DEMOTE ACTIVÉ!\n\n@${author.split('@')[0]} a essayé de retirer admin à BLACK GOKU!\n\n👑 Je reste ADMIN et toi tu es DÉCHU!`, mentions:[author]})
@@ -222,11 +254,15 @@ async function startBot(){
               }
               continue
             }
-            if(db.protec.includes(demoted) || db.autoPromote[id]?.includes(demoted)){
+            if(db.protec.includes(demoted) || db.bro.includes(demoted) || db.autoPromote[id]?.includes(demoted)){
               await sock.groupParticipantsUpdate(id, [demoted], "promote").catch(()=>{})
               if(author && author!==demoted){
                 let aNum = author.replace(/[^0-9]/g,'')
-                if(aNum!==OWNER_NUMBER &&!db.protec.includes(author)) await sock.groupParticipantsUpdate(id, [author], "demote").catch(()=>{})
+                if(aNum!==OWNER_NUMBER &&!db.protec.includes(author) &&!db.bro.includes(author)){
+                  await new Promise(r=>setTimeout(r,800))
+                  await sock.groupParticipantsUpdate(id, [author], "demote").catch(()=>{})
+                  await sock.sendMessage(id, {text: R.protecDemote(demoted, author), mentions:[demoted, author]})
+                }
               }
             }
           }
@@ -241,7 +277,7 @@ async function startBot(){
               continue
             }
             let num = removed.replace(/[^0-9]/g,'')
-            let isProtected = db.protec.includes(removed) || db.pro.includes(removed) || db.saved.includes(removed) || db.amis[num] || num===OWNER_NUMBER
+            let isProtected = db.protec.includes(removed) || db.bro.includes(removed) || db.pro.includes(removed) || db.saved.includes(removed) || db.amis[num] || num===OWNER_NUMBER
             let isKaio = db.kaio.includes(id)
             if(isProtected || isKaio){
               let meta = await sock.groupMetadata(id).catch(()=>null)
@@ -249,7 +285,7 @@ async function startBot(){
               let botIsAdmin = meta.participants.find(p=>isBot(p.id))?.admin
               if(!botIsAdmin) continue
               let authorNum = author? author.replace(/[^0-9]/g,'') : ''
-              let authorIsOwner = authorNum===OWNER_NUMBER || db.protec.includes(author) || (author && db.amis[authorNum])
+              let authorIsOwner = authorNum===OWNER_NUMBER || db.protec.includes(author) || db.bro.includes(author) || (author && db.amis[authorNum])
               if(!authorIsOwner){
                 await sock.groupParticipantsUpdate(id, [removed], "add").catch(()=>{})
                 await new Promise(r=>setTimeout(r,1000))
