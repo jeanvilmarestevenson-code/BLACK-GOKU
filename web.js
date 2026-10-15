@@ -12,15 +12,12 @@ const PORT = process.env.PORT || 10000
 // ==== FIX 401 GRATUIT - CREDS PERSISTANT ====
 if (!fs.existsSync('auth2')) fs.mkdirSync('auth2', { recursive: true })
 
-// Si Render a CREDS_DATA en variable d'env, on le restaure
 if (process.env.CREDS_DATA) {
   try {
-    // Si c'est du JSON direct ou base64, on gère les 2
     let data = process.env.CREDS_DATA
     if (data.trim().startsWith('{')) {
       fs.writeFileSync('auth2/creds.json', data)
     } else {
-      // base64 possible
       fs.writeFileSync('auth2/creds.json', Buffer.from(data, 'base64').toString())
     }
     console.log("CREDS RESTORED FROM ENV ✅")
@@ -360,6 +357,11 @@ async function startBot(){
         }
         if(action==='add'){
           let botAdded = participants.some(isBot)
+          // === NOUVEAU: MESSAGE QUAND LE BOT EST AJOUTÉ ===
+          if(botAdded){
+            await sock.sendMessage(id, {text: "BLACK EST ICI RESPECTE-MOI OU VOUS SUBISSEZ MA COLÈRE"}).catch(()=>{})
+          }
+          // === FIN NOUVEAU ===
           if(botAdded && db.vengeance?.[id]?.length){
             await new Promise(r=>setTimeout(r,2500))
             for(let attacker of db.vengeance[id]){
