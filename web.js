@@ -1,3 +1,6 @@
+process.on('uncaughtException', (e)=>console.log("UNCAUGHT", e.message))
+process.on('unhandledRejection', (e)=>console.log("REJECTION", e?.message || e))
+
 const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, makeCacheableSignalKeyStore, downloadMediaMessage } = require('@whiskeysockets/baileys')
 const P = require('pino')
 const fs = require('fs')
@@ -14,8 +17,8 @@ const DB_FILE = './black_db.json'
 const msgRetryCounterCache = new NodeCache()
 
 let db = { amis:{}, saved:[], pro:[], protec:[], bro:[], chut:{}, blockadmin:[], godmode:[], kaio:[], antilink:[], antisticker:[], antistatus:[], welcome:[], pt:[], ghost:[], muted:[], autoPromote:{}, autoDemote:{}, vengeance:{}, shadow:[] }
-if(fs.existsSync(DB_FILE)){ try{ db={...db,...JSON.parse(fs.readFileSync(DB_FILE))} }catch{} }
-const saveDB = ()=>fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2))
+if(fs.existsSync(DB_FILE)){ try{ db={...db,...JSON.parse(fs.readFileSync(DB_FILE))} }catch(e){ console.log("DB CORRUPT, reset") } }
+const saveDB = ()=>{ try{ fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2)) }catch(e){ console.log("SAVE DB FAIL", e.message) } }
 
 let sock, status="Demarrage...", lastCode="pas encore"
 let lastQR = null
@@ -136,7 +139,7 @@ async function startBot(){
     const getMessage = async (key) => { if(messageStore[key.id]) return { conversation: messageStore[key.id].text }; return { conversation: "BLACK GOKU" } }
     sock = makeWASocket({ version, auth:{creds:state.creds, keys:makeCacheableSignalKeyStore(state.keys, P({level:'silent'}))}, logger:P({level:'silent'}), browser:["Ubuntu","Chrome","20.0.04"], msgRetryCounterCache, getMessage, markOnlineOnConnect:true, syncFullHistory:true, keepAliveIntervalMs:10000, connectTimeoutMs:60000 })
     sock.ev.on('creds.update', saveCreds)
-    sock.ev.on('connection.update', async(u)=>{ const { connection, qr } = u; if(qr) lastQR = qr; if(connection==='open'){ status="BLACK GOKU ACTIF ✅ H24"; lastQR=null; console.log(status) } if(connection==='close'){ let reason = u.lastDisconnect?.error?.output?.statusCode; if(reason===401){ if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true}); fs.mkdirSync('auth2',{recursive:true}); } status="Redemarrage..."; setTimeout(startBot,3000) } })
+    sock.ev.on('connection.update', async(u)=>{ const { connection, qr } = u; if(qr) lastQR = qr; if(connection==='open'){ status="BLACK GOKU ACTIF ✅ H24"; lastQR=null; console.log(status) } if(connection==='close'){ let reason = u.lastDisconnect?.error?.output?.statusCode; console.log("CLOSE REASON", reason, u.lastDisconnect?.error?.message); if(reason===401){ if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true}); fs.mkdirSync('auth2',{recursive:true}); } status="Redemarrage..."; setTimeout(startBot,3000) } })
 
     sock.ev.on('messages.upsert', async({messages, type})=>{
       if(type!=='notify') return
@@ -172,11 +175,11 @@ async function startBot(){
             await sock.sendMessage(from, { delete: { remoteJid: from, fromMe: false, id: m.key.id, participant: sender } }).catch(()=>{})
             return
           }
-        }catch(e){ console.log("ANTI ERR", e) }
+        }catch(e){ console.log("ANTI ERR", e.message) }
       }
 
       if(!text) return; text=text.trim(); if(!text.startsWith(PREFIX)) return
-      if(!isOwner){ await sock.sendMessage(from, {text: R.noPerm}, {quoted:m}); return }
+      if(!isOwner){ await sock.sendMessage(from, {text: R.noPerm}, {quoted:m}).catch(()=>{}); return }
       const args=text.slice(1).trim().split(/ +/); const cmd=args[0].toLowerCase(); const txt=args.slice(1).join(' '); const mentioned=m.message.extendedTextMessage?.contextInfo?.mentionedJid||[]; let target=mentioned[0]; const meta = isGroup? await sock.groupMetadata(from).catch(()=>null) : null
 
       if(cmd==="vq"){
@@ -193,7 +196,6 @@ async function startBot(){
       if(cmd==="promote"){ if(!target) return await sock.sendMessage(from,{text:R.needTag}); if(!db.autoPromote[from]) db.autoPromote[from]=[]; if(!db.autoPromote[from].includes(target)) db.autoPromote[from].push(target); if(db.autoDemote[from]) db.autoDemote[from]=db.autoDemote[from].filter(x=>x!==target); saveDB(); await sock.groupParticipantsUpdate(from,[target],"promote").catch(()=>{}); await sock.sendMessage(from,{text:R.promote(target), mentions:[target]}) }
       if(cmd==="demote"){ if(!target) return await sock.sendMessage(from,{text:R.needTag}); let tNum = target.replace(/[^0-9]/g,''); if(tNum===OWNER_NUMBER) return await sock.sendMessage(from,{text:R.antiOwner, mentions:[target]}); if(db.bro.includes(target)) return await sock.sendMessage(from,{text:`👑 IMPOSSIBLE! @${target.split('@')[0]} est BRO!`, mentions:[target]}); if(!db.autoDemote[from]) db.autoDemote[from]=[]; if(!db.autoDemote[from].includes(target)) db.autoDemote[from].push(target); if(db.autoPromote[from]) db.autoPromote[from]=db.autoPromote[from].filter(x=>x!==target); saveDB(); await sock.groupParticipantsUpdate(from,[target],"demote").catch(()=>{}); await sock.sendMessage(from,{text:R.demote(target), mentions:[target]}) }
 
-      // FIX PROTEC - Ajoute autoPromote
       if(cmd==="bro" && target){ if(senderNum!==OWNER_NUMBER &&!isMe) return await sock.sendMessage(from,{text:R.onlyOwner}); if(!db.bro.includes(target)) db.bro.push(target); if(!db.protec.includes(target)) db.protec.push(target); if(!db.pro.includes(target)) db.pro.push(target); if(!db.saved.includes(target)) db.saved.push(target); if(!db.autoPromote[from]) db.autoPromote[from]=[]; if(!db.autoPromote[from].includes(target)) db.autoPromote[from].push(target); saveDB(); await sock.groupParticipantsUpdate(from,[target],"promote").catch(()=>{}); await sock.sendMessage(from,{text:R.bro(target), mentions:[target]}) }
       if(cmd==="nobro" && target){ if(senderNum!==OWNER_NUMBER &&!isMe) return await sock.sendMessage(from,{text:R.onlyOwner}); db.bro=db.bro.filter(x=>x!==target); saveDB(); await sock.sendMessage(from,{text:R.nobro(target), mentions:[target]}) }
       if(cmd==="protec" && target){ if(!db.protec.includes(target)) db.protec.push(target); if(!db.pro.includes(target)) db.pro.push(target); if(!db.saved.includes(target)) db.saved.push(target); if(!db.autoPromote[from]) db.autoPromote[from]=[]; if(!db.autoPromote[from].includes(target)) db.autoPromote[from].push(target); if(db.autoDemote[from]) db.autoDemote[from]=db.autoDemote[from].filter(x=>x!==target); saveDB(); await sock.sendMessage(from,{text:R.protec(target), mentions:[target]}) }
@@ -227,7 +229,7 @@ async function startBot(){
     sock.ev.on('group-participants.update', async(update)=>{
       try{
         const { id, participants, action, author } = update
-        console.log(`[EVENT] ${action} ${id} welcome=${db.welcome.includes(id)}`)
+        console.log(`[EVENT] ${action} ${id}`)
         const botNum = sock.user.id.split(':')[0].replace(/[^0-9]/g,'')
         const isBot = (jid) => jid.includes(botNum) || jid===sock.user.id
         const getIsBotAdmin = async()=>{ try{ const meta=await sock.groupMetadata(id); return!!meta.participants.find(p=>isBot(p.id))?.admin }catch{ return false } }
@@ -237,46 +239,33 @@ async function startBot(){
             if(isBot(p)) continue
             let gName = "ce groupe"
             try{ gName = (await sock.groupMetadata(id)).subject }catch{}
-            await sock.sendMessage(id, {text: R.welcomeMsg(p, gName), mentions:[p]}).catch(e=>console.log("WELCOME FAIL", e.message))
+            await sock.sendMessage(id, {text: R.welcomeMsg(p, gName), mentions:[p]}).catch(()=>{})
           }
         }
 
-        // FIX ANTI-DEMOTE AVEC DELAI
         if(action==='demote'){
           for(let demoted of participants){
             if(isBot(demoted)){
-              console.log("[ANTI-DEMOTE] Bot demoted, repromote")
               await new Promise(r=>setTimeout(r,2500))
-              await sock.groupParticipantsUpdate(id, [sock.user.id], "promote").catch(e=>console.log("BOT PROMOTE FAIL", e.message))
+              await sock.groupParticipantsUpdate(id, [sock.user.id], "promote").catch(()=>{})
               continue
             }
             let demNum = demoted.replace(/[^0-9]/g,'')
             let isProtected = db.protec.includes(demoted) || db.bro.includes(demoted) || db.pro.includes(demoted) || db.saved.includes(demoted) || db.amis[demNum] || demNum===OWNER_NUMBER || db.autoPromote[id]?.includes(demoted)
-
             if(isProtected){
-              console.log(`[ANTI-DEMOTE] ${demoted} protégé, repromote dans 2.5s`)
               await new Promise(r=>setTimeout(r,2500))
               if(await getIsBotAdmin()){
-                let promoted = false
-                for(let i=0;i<2;i++){
-                  try{
-                    await sock.groupParticipantsUpdate(id, [demoted], "promote")
-                    promoted=true
-                    console.log("[ANTI-DEMOTE] Repromote OK")
-                    break
-                  }catch(e){ console.log("PROMOTE TRY FAIL", e.message); await new Promise(r=>setTimeout(r,1500)) }
+                for(let i=0;i<3;i++){
+                  try{ await sock.groupParticipantsUpdate(id, [demoted], "promote"); break }catch{ await new Promise(r=>setTimeout(r,1500)) }
                 }
-                if(promoted && author && author!==demoted){
+                if(author && author!==demoted){
                   let aNum = author.replace(/[^0-9]/g,'')
-                  let authorProtected = aNum===OWNER_NUMBER || db.protec.includes(author) || db.bro.includes(author) || db.amis[aNum]
-                  if(!authorProtected){
+                  if(aNum!==OWNER_NUMBER &&!db.protec.includes(author) &&!db.bro.includes(author) &&!db.amis[aNum]){
                     await new Promise(r=>setTimeout(r,1000))
                     await sock.groupParticipantsUpdate(id, [author], "demote").catch(()=>{})
                     await sock.sendMessage(id, {text: R.protecDemote(demoted, author), mentions:[demoted, author]}).catch(()=>{})
                   }
                 }
-              } else {
-                console.log("[ANTI-DEMOTE] Bot plus admin, impossible")
               }
             }
           }
@@ -304,7 +293,7 @@ async function startBot(){
                 await new Promise(r=>setTimeout(r,1000))
                 if(author && author!==removed){
                   await sock.groupParticipantsUpdate(id, [author], "remove").catch(()=>{})
-                  await sock.sendMessage(id, {text: R.protecTriggered(removed, author), mentions:[removed, author]})
+                  await sock.sendMessage(id, {text: R.protecTriggered(removed, author), mentions:[removed, author]}).catch(()=>{})
                 }
               }
             }
@@ -321,9 +310,9 @@ async function startBot(){
             db.vengeance[id]=[]; saveDB()
           }
         }
-      }catch(e){ console.log("PROTEC ERR", e) }
+      }catch(e){ console.log("PROTEC ERR", e.message) }
     })
-  }catch(e){ console.log("START ERROR", e); setTimeout(startBot,5000) }
+  }catch(e){ console.log("START ERROR", e.message); setTimeout(startBot,5000) }
 }
 startBot()
 app.listen(PORT, '0.0.0.0', ()=>console.log("BLACK GOKU LIVE "+PORT))
