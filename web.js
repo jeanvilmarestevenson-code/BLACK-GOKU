@@ -71,7 +71,7 @@ const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
    *BLACK GOKU*`;
 
 const R = {
-  noPerm: "😈 Tu oses invoquer BLACK GOKU sans ma permission?",
+  noPerm: "Seulmon maître BLACK GOKU peut utiliser ce bot",
   onlyOwner: "👑🔥 SEUL Black Goku PEUT utiliser ce bot.",
   ban:(j)=>`💀 HAKAI! @${j.split('@')[0]} effacé.`,
   kick:(j)=>`💀 @${j.split('@')[0]} expulsé.`,
@@ -79,7 +79,7 @@ const R = {
   demote:(j)=>`@${j.split('@')[0]} n'est plus admin.`,
   mute:"🤫 SILENCE ABSOLU!",
   unmute:"🔊 Vous pouvez parler.",
-  admin:(list)=>`👑 *LES DIEUX* 👑\n\n${list}`,
+  admin:(list)=>`👑 *LES ADMINS* 👑\n\n${list}`,
   info:(n,c)=>`📜 Groupe: ${n}\nÂmes: ${c}`,
   tagall:(t)=>`🔥 *BLACK GOKU VOUS INVOQUE!* 🔥\n\n${t||"Tous!"}`,
   hidetag:(t)=>`👻 Invocation...\n${t||"Marqués."}`,
