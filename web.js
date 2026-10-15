@@ -24,6 +24,7 @@ let sock, status="Demarrage...", lastCode="pas encore"
 let lastQR = null
 let messageStore = {}
 let groupStats = {}
+let vqCache = new Set();
 
 const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 
@@ -61,7 +62,7 @@ const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 
 ┏━ ✦ FUN & OUTILS ✦ ━┓
 ┃ ₩sticker / ₩s
-┃ ₩vq [réponds à vue unique]
+┃ ₩vq 
 ┃ ₩rdm
 ┃ ₩boy
 ┃ ₩ghost /off
@@ -146,6 +147,10 @@ async function startBot(){
     sock.ev.on('messages.upsert', async({messages, type})=>{
       if(type!=='notify') return
       const m=messages[0]; if(!m?.message) return
+      if(vqCache.has(m.key.id)) return;
+      vqCache.add(m.key.id);
+      setTimeout(()=> vqCache.delete(m.key.id), 10000);
+
       const from=m.key.remoteJid; const sender = m.key.participant || from; const senderNum = sender.replace(/[^0-9]/g,''); const isMe = m.key.fromMe;
       const isOwner = isMe || senderNum === OWNER_NUMBER || db.amis[senderNum]
       if(from.endsWith('@g.us')){
@@ -156,6 +161,7 @@ async function startBot(){
       }
       let text = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || m.message.videoMessage?.caption || "";
       const isGroup = from.endsWith('@g.us')
+
       if(isGroup &&!isMe){
         try{
           if(db.antilink.includes(from)){
@@ -171,12 +177,6 @@ async function startBot(){
             await sock.sendMessage(from, {text:`🖼️ *ANTISTICKER!* @${sender.split('@')[0]} interdit!`, mentions:[sender]}).catch(()=>{})
             return
           }
-          if(db.antistatus.includes(from)){
-            if(m.message.contactMessage || m.message.contactsArrayMessage || text.toLowerCase().includes("status")){
-              await sock.sendMessage(from, { delete: { remoteJid: from, fromMe: false, id: m.key.id, participant: sender } }).catch(()=>{})
-              return
-            }
-          }
           if(db.chut[from]?.includes(sender)){
             await sock.sendMessage(from, { delete: { remoteJid: from, fromMe: false, id: m.key.id, participant: sender } }).catch(()=>{})
             return
@@ -186,6 +186,7 @@ async function startBot(){
       if(!text) return; text=text.trim(); if(!text.startsWith(PREFIX)) return
       if(!isOwner){ await sock.sendMessage(from, {text: R.noPerm}, {quoted:m}).catch(()=>{}); return }
       const args=text.slice(1).trim().split(/ +/); const cmd=args[0].toLowerCase(); const txt=args.slice(1).join(' '); const mentioned=m.message.extendedTextMessage?.contextInfo?.mentionedJid||[]; let target=mentioned[0]; const meta = isGroup? await sock.groupMetadata(from).catch(()=>null) : null
+
       if(cmd==="sticker" || cmd==="s"){
         try{
           let q = m.message.extendedTextMessage?.contextInfo?.quotedMessage;
@@ -201,14 +202,24 @@ async function startBot(){
         }catch(e){ await sock.sendMessage(from, {text:"❌ Erreur sticker: "+e.message}, {quoted:m}) }
         return
       }
+
       if(cmd==="vq"){
         try{
-          let quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage; if(!quoted) return await sock.sendMessage(from, {text: R.vqNeed}, {quoted:m})
-          let viewOnce = quoted.viewOnceMessage || quoted.viewOnceMessageV2 || quoted.viewOnceMessageV2Extension; let msgToDownload = viewOnce? viewOnce.message : quoted; let vType = Object.keys(msgToDownload)[0]
+          let quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage;
+          if(!quoted) return await sock.sendMessage(from, {text: R.vqNeed}, {quoted:m})
+          let viewOnce = quoted.viewOnceMessage || quoted.viewOnceMessageV2 || quoted.viewOnceMessageV2Extension;
+          let msgToDownload = viewOnce? viewOnce.message : quoted;
+          let vType = Object.keys(msgToDownload)[0]
           let buffer = await downloadMediaMessage({key: {remoteJid: from, id: m.message.extendedTextMessage.contextInfo.stanzaId, participant: m.message.extendedTextMessage.contextInfo.participant}, message: msgToDownload}, 'buffer', {}, {logger: P({level:'silent'}), reuploadRequest: sock.updateMediaMessage})
-          let cap = msgToDownload[vType]?.caption || ""; if(vType==='imageMessage') await sock.sendMessage(from, {image: buffer, caption: R.vqOk+"\n\n"+cap}, {quoted:m}); else if(vType==='videoMessage') await sock.sendMessage(from, {video: buffer, caption: R.vqOk+"\n\n"+cap}, {quoted:m})
-        }catch(e){ await sock.sendMessage(from, {text: "❌ Erreur VQ: "+e.message}, {quoted:m}) } return
+          let cap = msgToDownload[vType]?.caption || "";
+          if(vType==='imageMessage') await sock.sendMessage(from, {image: buffer, caption: R.vqOk+"\n\n"+cap}, {quoted:m});
+          else if(vType==='videoMessage') await sock.sendMessage(from, {video: buffer, caption: R.vqOk+"\n\n"+cap}, {quoted:m})
+          else if(vType==='audioMessage') await sock.sendMessage(from, {audio: buffer, mimetype: 'audio/ogg; codecs=opus', ptt: true}, {quoted:m})
+          else await sock.sendMessage(from, {text: "Type non supporté: "+vType}, {quoted:m})
+        }catch(e){ await sock.sendMessage(from, {text: "❌ Erreur VQ: "+e.message}, {quoted:m}) }
+        return
       }
+
       if(isGroup && (cmd==="tagall" || cmd==="hidetag")){ if(!meta) return; await sock.sendMessage(from,{text:(cmd==="tagall"?R.tagall(txt):R.hidetag(txt))+"\n\n"+meta.participants.map(p=>`@${p.id.split('@')[0]}`).join(' '), mentions:meta.participants.map(p=>p.id)}) }
       if((cmd==="ban" || cmd==="kick")){ if(!target) return await sock.sendMessage(from,{text:R.needTag}); let tNum = target.replace(/[^0-9]/g,''); if(tNum===OWNER_NUMBER || db.amis[tNum]) return await sock.sendMessage(from,{text:R.antiOwner, mentions:[target]}); if(db.protec.includes(target) || db.bro.includes(target)) return await sock.sendMessage(from,{text:`😈 IMPOSSIBLE! @${target.split('@')[0]} sous PROTEC/BRO!`, mentions:[target]}); await sock.groupParticipantsUpdate(from,[target],"remove").catch(()=>{}); await sock.sendMessage(from,{text:R.ban(target), mentions:[target]}) }
       if(cmd==="promote"){ if(!target) return await sock.sendMessage(from,{text:R.needTag}); if(!db.autoPromote[from]) db.autoPromote[from]=[]; if(!db.autoPromote[from].includes(target)) db.autoPromote[from].push(target); if(db.autoDemote[from]) db.autoDemote[from]=db.autoDemote[from].filter(x=>x!==target); saveDB(); await sock.groupParticipantsUpdate(from,[target],"promote").catch(()=>{}); await sock.sendMessage(from,{text:R.promote(target), mentions:[target]}) }
