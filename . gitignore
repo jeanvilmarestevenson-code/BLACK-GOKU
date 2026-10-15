@@ -2,5 +2,7 @@ node_modules/
 npm-debug.log
 .env
 .DS_Store
+auth2/
 auth_info/
 *.log
+black_db.json
