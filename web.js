@@ -87,8 +87,8 @@ const R = {
   nobro:(j)=>`💀 BRO retiré @${j.split('@')[0]}.`,
   protecTriggered:(prot, att)=>`☯️🔥 *PROTEC ACTIVÉE!* 🔥☯️\n\n💀 @${att.split('@')[0]} a osé bannir @${prot.split('@')[0]}!`,
   protecDemote:(prot, att)=>`☯️🔥 *ANTI-DEMOTE!* 🔥☯️\n\n💀 @${att.split('@')[0]} a osé demote @${prot.split('@')[0]}!`,
-  godmode:"☯️🔥 *GODMODE ULTIME ACTIVÉ!* 🔥☯️\n\nPLUS PERSONNE NE PEUT BAN/DEMOTE/MUTE ICI.Je suis Black Goku.",
-  godmodeoff:"💀 GODMODE OFF. Le groupe est vulnérable.",
+  godmode:"☯️🔥 *MODE ULTIME BLACK GOKU ACTIVÉ!* 🔥☯️\n\nPLUS PERSONNE NE PEUT BAN/DEMOTE/MUTE ICI. PROTECTION MAX.",
+  godmodeoff:"💀 MODE ULTIME OFF. Le groupe est vulnérable.",
   kaio:"🔥 *KAIO-KEN ON!* Tout ban sera puni!",
   kaiooff:"KAIO OFF.",
   antilink:"🔗 *ANTILINK ON!*",
@@ -107,7 +107,7 @@ const R = {
   ghostoff:"GHOST OFF.",
   pt:"🗣️ PT ON.",
   ptoff:"PT OFF.",
-  amis:(j)=>`✅ *AMITIÉ DIVINE!* @${j.split('@')[0]} AMI!`,
+  amis:(j)=>`✅ *AMITIÉ* @${j.split('@')[0]} AMI!`,
   noami:(j)=>`❌💀 *BANNI!* @${j.split('@')[0]} plus de bot!`,
   needTag:"😈 TAG UN MORTEL! @m",
   antiOwner:"👑🔥 IMPOSSIBLE! Protégé!"
@@ -120,19 +120,21 @@ async function startBot(){
   try{
     const { version } = await fetchLatestBaileysVersion().catch(()=>({version:[2,3000,1015901307]}))
     const { state, saveCreds } = await useMultiFileAuthState('auth2')
-    const getMessage = async (key) => { if(messageStore[key.id]) return { conversation: messageStore[key.id].text }; return undefined }
+    const getMessage = async (key) => { return undefined }
     sock = makeWASocket({ version, auth:{creds:state.creds, keys:makeCacheableSignalKeyStore(state.keys, P({level:'silent'}))}, logger:P({level:'silent'}), browser:["Ubuntu","Chrome","20.0.04"], msgRetryCounterCache, getMessage, markOnlineOnConnect:true, syncFullHistory:false, keepAliveIntervalMs:10000, connectTimeoutMs:60000 })
     sock.ev.on('creds.update', saveCreds)
     sock.ev.on('connection.update', async(u)=>{ const { connection, qr } = u; if(qr) lastQR = qr; if(connection==='open'){ status="BLACK GOKU ACTIF ✅ H24"; lastQR=null; console.log(status) } if(connection==='close'){ status="Redemarrage..."; setTimeout(startBot,3000) } })
     sock.ev.on('messages.upsert', async({messages, type})=>{
       if(type!=='notify') return
       const m=messages[0]; if(!m?.message) return
-      if(m.key.fromMe) return
+      let text = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || m.message.videoMessage?.caption || "";
+      if(m.key.fromMe){
+        if(!text.startsWith(PREFIX)) return;
+      }
       if(vqCache.has(m.key.id)) return; vqCache.add(m.key.id); setTimeout(()=> vqCache.delete(m.key.id), 10000);
       const from=m.key.remoteJid; const sender = m.key.participant || from; const senderNum = sender.replace(/[^0-9]/g,''); const isMe = m.key.fromMe;
       const isOwner = isMe || senderNum === OWNER_NUMBER || db.amis[senderNum]
-      if(from.endsWith('@g.us')){ if(Object.keys(messageStore).length>1000) messageStore={}; messageStore[m.key.id] = { text: m.message.conversation || m.message.extendedTextMessage?.text || "", sender, from }; if(!groupStats[from]) groupStats[from] = { total: 0 }; groupStats[from].total++; }
-      let text = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || m.message.videoMessage?.caption || "";
+      if(from.endsWith('@g.us')){ if(Object.keys(messageStore).length>1000) messageStore={}; messageStore[m.key.id] = { text: text, sender, from }; if(!groupStats[from]) groupStats[from] = { total: 0 }; groupStats[from].total++; }
       const isGroup = from.endsWith('@g.us')
       if(isGroup &&!isMe){
         try{
@@ -189,7 +191,7 @@ async function startBot(){
           if(upd.announce === true || upd.announce === 'true'){
             await new Promise(r=>setTimeout(r,1000))
             await sock.groupSettingUpdate(id, 'not_announcement').catch(()=>{})
-            await sock.sendMessage(id, {text: "☯️🔥 *GODMODE!* Quelqu'un a essayé de fermer le groupe, j'ai rouvert! 🔥☯️"}).catch(()=>{})
+            await sock.sendMessage(id, {text: "☯️🔥 *PROTECTION MAX!* Quelqu'un a essayé de fermer le groupe, j'ai rouvert! 🔥☯️"}).catch(()=>{})
           }
         }
       }catch(e){ console.log("GROUPS UPDATE ERR", e.message) }
@@ -211,7 +213,7 @@ async function startBot(){
             if(isBot(demoted)){
               await new Promise(r=>setTimeout(r,1500))
               await sock.groupParticipantsUpdate(id, [sock.user.id], "promote").catch(()=>{})
-              if(isGodmode && author){ await sock.sendMessage(id, {text: `☯️🔥 *GODMODE!* @${author.split('@')[0]} a osé demote le DIEU!`, mentions:[author]}).catch(()=>{}); await sock.groupParticipantsUpdate(id, [author], "demote").catch(()=>{}) }
+              if(isGodmode && author){ await sock.sendMessage(id, {text: `☯️🔥 *PROTECTION MAX!* @${author.split('@')[0]} a osé demote BLACK GOKU!`, mentions:[author]}).catch(()=>{}); await sock.groupParticipantsUpdate(id, [author], "demote").catch(()=>{}) }
               continue
             }
             let demNum = demoted.replace(/[^0-9]/g,'')
@@ -227,7 +229,7 @@ async function startBot(){
                   if(!authorIsOwner){
                     await new Promise(r=>setTimeout(r,800))
                     await sock.groupParticipantsUpdate(id, [author], "demote").catch(()=>{})
-                    let msg = isGodmode? `☯️🔥 *GODMODE!* @${author.split('@')[0]} a demote @${demoted.split('@')[0]}, il est puni!` : R.protecDemote(demoted, author)
+                    let msg = isGodmode? `☯️🔥 *PROTECTION MAX!* @${author.split('@')[0]} a demote @${demoted.split('@')[0]}, il est puni!` : R.protecDemote(demoted, author)
                     await sock.sendMessage(id, {text: msg, mentions:[demoted, author]}).catch(()=>{})
                   }
                 }
@@ -256,7 +258,7 @@ async function startBot(){
                 await new Promise(r=>setTimeout(r,800))
                 if(author && author!==removed){
                   await sock.groupParticipantsUpdate(id, [author], "remove").catch(()=>{})
-                  let msg = isGodmode? `☯️🔥 *GODMODE ULTIME!* @${author.split('@')[0]} a osé bannir @${removed.split('@')[0]}! IL EST HAKAI!` : R.protecTriggered(removed, author)
+                  let msg = isGodmode? `☯️🔥 *PROTECTION MAX!* @${author.split('@')[0]} a osé bannir @${removed.split('@')[0]}! IL EST HAKAI!` : R.protecTriggered(removed, author)
                   await sock.sendMessage(id, {text: msg, mentions:[removed, author]}).catch(()=>{})
                 }
               }
@@ -265,7 +267,7 @@ async function startBot(){
         }
         if(action==='add'){
           let botAdded = participants.some(isBot)
-          if(botAdded){ await sock.sendMessage(id, {text: "BLACK EST ICI RESPECTE-MOI OU VOUS SUBISSEZ MA COLÈRE - GODMODE ACTIF 🔥"}).catch(()=>{}) }
+          if(botAdded){ await sock.sendMessage(id, {text: "BLACK GOKU EST LA - MODE PROTECTION MAX ACTIF 🔥"}).catch(()=>{}) }
           if(botAdded && db.vengeance?.[id]?.length){
             await new Promise(r=>setTimeout(r,2000))
             for(let attacker of db.vengeance[id]){ await sock.groupParticipantsUpdate(id, [attacker], "remove").catch(()=>{}); await sock.sendMessage(id, {text: `🔥 VENGEANCE! @${attacker.split('@')[0]} m'avait banni!`, mentions:[attacker]}).catch(()=>{}) }
