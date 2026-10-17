@@ -87,8 +87,8 @@ const R = {
   nobro:(j)=>`💀 BRO retiré @${j.split('@')[0]}.`,
   protecTriggered:(prot, att)=>`☯️🔥 *PROTEC ACTIVÉE!* 🔥☯️\n\n💀 @${att.split('@')[0]} a osé bannir @${prot.split('@')[0]}!`,
   protecDemote:(prot, att)=>`☯️🔥 *ANTI-DEMOTE!* 🔥☯️\n\n💀 @${att.split('@')[0]} a osé demote @${prot.split('@')[0]}!`,
-  godmode:"☯️🔥 *MODE ULTIME BLACK GOKU ACTIVÉ!* 🔥☯️\n\nPLUS PERSONNE NE PEUT BAN/DEMOTE/MUTE ICI. PROTECTION MAX.",
-  godmodeoff:"💀 MODE ULTIME OFF. Le groupe est vulnérable.",
+  godmode:"☯️🔥 *MODE ULTIME BLACK GOKU ACTIVÉ!* 🔥☯️\n\nPLUS PERSONNE NE PEUT BAN/DEMOTE/MUTE ICI.",
+  godmodeoff:"💀 MODE ULTIME OFF.",
   kaio:"🔥 *KAIO-KEN ON!* Tout ban sera puni!",
   kaiooff:"KAIO OFF.",
   antilink:"🔗 *ANTILINK ON!*",
@@ -99,7 +99,7 @@ const R = {
   antistatusoff:"ANTISTATUS OFF.",
   welcome:"👋 *WELCOME ON*",
   welcomeoff:"WELCOME OFF.",
-  welcomeMsg:(j, g)=>`꧁༒ BIENVENUE ☬༒꧂\n\n👑 @${j.split('@')[0]} dans *${g}*.\nJe suis Black Goku comporte toi bien ou tu subiras ma colère`,
+  welcomeMsg:(j, g)=>`꧁༒ BIENVENUE ☬༒꧂\n\n👑 @${j.split('@')[0]} dans *${g}*.`,
   vqOk: "👁️🔥 *VUE UNIQUE DÉVOILÉE* 🔥👁️",
   vqNeed: "😈 Réponds à une vue unique avec ₩vq!",
   boy:"💀 JE SUIS BLACK GOKU",
@@ -127,13 +127,13 @@ async function startBot(){
     sock.ev.on('messages.upsert', async({messages, type})=>{
       if(type!=='notify') return
       const m=messages[0]; if(!m?.message) return
-      let text = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || m.message.videoMessage?.caption || "";
-      if(m.key.fromMe){
-        if(!text.startsWith(PREFIX)) return;
-      }
       if(vqCache.has(m.key.id)) return; vqCache.add(m.key.id); setTimeout(()=> vqCache.delete(m.key.id), 10000);
-      const from=m.key.remoteJid; const sender = m.key.participant || from; const senderNum = sender.replace(/[^0-9]/g,''); const isMe = m.key.fromMe;
+      const from=m.key.remoteJid;
+      const sender = m.key.participant || from;
+      const senderNum = sender.replace(/[^0-9]/g,'');
+      const isMe = m.key.fromMe;
       const isOwner = isMe || senderNum === OWNER_NUMBER || db.amis[senderNum]
+      let text = m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || m.message.videoMessage?.caption || "";
       if(from.endsWith('@g.us')){ if(Object.keys(messageStore).length>1000) messageStore={}; messageStore[m.key.id] = { text: text, sender, from }; if(!groupStats[from]) groupStats[from] = { total: 0 }; groupStats[from].total++; }
       const isGroup = from.endsWith('@g.us')
       if(isGroup &&!isMe){
