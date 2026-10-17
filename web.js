@@ -99,7 +99,7 @@ const R = {
   antistatusoff:"ANTISTATUS OFF.",
   welcome:"👋 *WELCOME ON*",
   welcomeoff:"WELCOME OFF.",
-  welcomeMsg:(j, g)=>`꧁༒ BIENVENUE ☬༒꧂\n\n👑 @${j.split('@')[0]} dans *${g}*. Comporte toi bien ou tu subiras ma colère.`,
+  welcomeMsg:(j, g)=>`꧁༒ BIENVENUE ☬༒꧂\n\n👑 @${j.split('@')[0]} dans *${g}*. Je suis Black Goku Comporte toi bien ou tu subiras ma colère.`,
   vqOk: "👁️🔥 *VUE UNIQUE DÉVOILÉE* 🔥👁️",
   vqNeed: "😈 Réponds à une vue unique avec ₩vq!",
   boy:"💀 JE SUIS BLACK GOKU",
