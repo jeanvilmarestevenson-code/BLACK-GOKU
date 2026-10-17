@@ -1,8 +1,10 @@
 node_modules/
-npm-debug.log
-.env
-.DS_Store
 auth2/
-auth_info/
-*.log
 black_db.json
+*.log
+.DS_Store
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
