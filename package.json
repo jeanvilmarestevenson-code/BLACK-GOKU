@@ -1,13 +1,13 @@
 {
   "name": "black-goku-h24",
-  "version": "1.0.0",
-  "description": "BLACK GOKU H24 - Actif maintenant",
+  "version": "15.0.0",
+  "description": "BLACK GOKU H24 - V15 FINAL DIABOLIQUE",
   "main": "web.js",
   "scripts": {
     "start": "node web.js"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.21",
+    "@whiskeysockets/baileys": "^6.7.18",
     "express": "^4.18.2",
     "pino": "^8.17.0",
     "node-cache": "^5.1.2"
