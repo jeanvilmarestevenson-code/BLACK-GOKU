@@ -1,18 +1,14 @@
 {
-  "name": "black-goku-h24",
+  "name": "black-goku",
   "version": "1.0.0",
-  "description": "BLACK GOKU H24 - Actif maintenant",
   "main": "web.js",
   "scripts": {
     "start": "node web.js"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.21",
+    "@whiskeysockets/baileys": "^6.7.8",
+    "pino": "^9.0.0",
     "express": "^4.18.2",
-    "pino": "^8.17.0",
-    "node-cache": "^5.1.2"
-  },
-  "engines": {
-    "node": "20.x"
+    "qrcode-terminal": "^0.12.0"
   }
 }
