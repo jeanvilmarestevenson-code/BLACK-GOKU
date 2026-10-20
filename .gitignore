@@ -1,0 +1,15 @@
+node_modules/
+auth/
+auth_info_baileys/
+auth2/
+black_db.json
+.env
+*.log
+.DS_Store
+qrcode.png
+creds.json
+*.tmp
+*.bak
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
