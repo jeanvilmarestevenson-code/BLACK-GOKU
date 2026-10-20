@@ -8,3 +8,13 @@ qrcode.png
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# BLACK GOKU - NE JAMAIS UPLOAD
+auth2/
+auth_info/
+black_db.json
+creds.json
+*.jpg
+*.png
+!menu.jpg
+!goat.jpg
