@@ -10,6 +10,18 @@ const app = express()
 const PORT = process.env.PORT || 10000
 
 if (!fs.existsSync('auth2')) fs.mkdirSync('auth2', { recursive: true })
+
+// 🔥 FIX ANTI-DECO RENDER - RESTAURE SESSION AUTO
+if (process.env.SESSION_ID) {
+  try {
+    if (!fs.existsSync('auth2/creds.json')) {
+      const sess = Buffer.from(process.env.SESSION_ID, 'base64').toString();
+      fs.writeFileSync('auth2/creds.json', sess);
+      console.log("✅ SESSION RESTAURÉE DEPUIS ENV - PLUS BESOIN DE SCAN");
+    }
+  } catch(e) { console.log("SESSION ERR", e.message) }
+}
+
 const OWNER_NUMBER = "5551982215198"
 const PREFIX = "₩"
 const DB_FILE = './black_db.json'
@@ -41,7 +53,7 @@ const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 ┃ ₩unchut @m 
 ┃ ₩blockadmin @m
 ┃ ₩unblockadmin @m
-┃ ₩goat - HAKAI SOMBRE
+┃ ₩goat 
 ┗━━━━━━━━━━━━━━┛
 ┏━ ✦ PROTECTION ✦ ━┓
 ┃ ₩save @m / ₩unsave 
@@ -72,6 +84,7 @@ const getMenu = () => `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 const R = {
   noPerm: "Seul BLACK GOKU peut utiliser cette commande 👑",
   onlyOwner: "👑🔥 SEUL Black Goku PEUT utiliser ce bot.",
+  onlyGoat: "👑💀 SEUL BLACK GOKU PEUT UTILISER ₩goat - HAKAI INTERDIT AUX MORTELS!",
   ban:(j)=>`💀 HAKAI! @${j.split('@')[0]} effacé.`,
   kick:(j)=>`💀 @${j.split('@')[0]} expulsé.`,
   promote:(j)=>`👑 @${j.split('@')[0]} élevé admin.`,
@@ -147,7 +160,16 @@ async function startBot(){
       retryRequestDelayMs: 250,
       maxMsgRetryCount: 5
     })
-    sock.ev.on('creds.update', saveCreds)
+    sock.ev.on('creds.update', async() => {
+      await saveCreds();
+      try {
+        if (fs.existsSync('auth2/creds.json')) {
+          const creds = fs.readFileSync('auth2/creds.json', 'utf8');
+          const b64 = Buffer.from(creds).toString('base64');
+          console.log("\n====== COPIE CE SESSION_ID DANS RENDER ENV ======\n"+b64+"\n====== FIN SESSION_ID ======\n");
+        }
+      } catch(e) {}
+    })
     sock.ev.on('connection.update', async(u)=>{ 
       const { connection, lastDisconnect, qr } = u; 
       if(qr) lastQR = qr; 
@@ -216,10 +238,16 @@ async function startBot(){
         let senderPhoneNum = senderPhone.replace(/[^0-9]/g,'');
         if (!senderPhoneNum) senderPhoneNum = senderNum;
 
-        const isOwnerLid = (() => {
+        // VRAI OWNER = SEULEMENT TOI
+        const isRealOwner = (() => {
           if(isMe) return true;
           if(senderNum === OWNER_NUMBER) return true;
           if(senderPhoneNum === OWNER_NUMBER) return true;
+          return false;
+        })();
+
+        const isOwnerLid = (() => {
+          if(isRealOwner) return true;
           if(senderPhoneNum.endsWith(OWNER_NUMBER.slice(-8))) return true;
           if(db.amis[senderNum]) return true;
           if(db.amis[senderPhoneNum]) return true;
@@ -228,9 +256,8 @@ async function startBot(){
           return false;
         })();
 
-        if(isOwnerLid && sender.includes('@lid') && !db.ownerLids.includes(sender)){ db.ownerLids.push(sender); saveDB(); }
+        if(isRealOwner && sender.includes('@lid') && !db.ownerLids.includes(sender)){ db.ownerLids.push(sender); saveDB(); }
 
-        // --- MENU AVEC IMAGE menu.jpg + goat.jpg FALLBACK ---
         if(["black","menu","b"].includes(cmd)){ 
           if(!isOwnerLid){ await sock.sendMessage(from, {text: R.noPerm}, {quoted:m}).catch(()=>{}); continue } 
           try{
@@ -256,8 +283,12 @@ async function startBot(){
         if(isGroup && (cmd==="tagall" || cmd==="hidetag")){ if(!meta) continue; await sock.sendMessage(from,{text:(cmd==="tagall"?R.tagall(txt):R.hidetag(txt))+"\n\n"+meta.participants.map(p=>`@${p.id.split('@')[0]}`).join(' '), mentions:meta.participants.map(p=>p.id)}); continue }
         if((cmd==="ban" || cmd==="kick")){ if(!multi.length) { await sock.sendMessage(from,{text:R.needTag}); continue; } for(let t of multi){ let tNum = t.replace(/[^0-9]/g,''); if(tNum===OWNER_NUMBER || db.amis[tNum]) continue; if(db.protec.includes(t) || db.bro.includes(t)) { await sock.sendMessage(from,{text:`😈 IMPOSSIBLE! @${t.split('@')[0]} sous PROTEC/BRO!`, mentions:[t]}); continue; } await sock.groupParticipantsUpdate(from,[t],"remove").catch(()=>{}); } await sock.sendMessage(from,{text:`💀 HAKAI! ${multi.length} effacés.`, mentions:multi}); continue }
         
-        // --- GOAT AVEC IMAGE goat.jpg ---
+        // 🔥 GOAT - SEUL REAL OWNER
         if(cmd==="goat"){ 
+          if(!isRealOwner){
+            await sock.sendMessage(from,{text:R.onlyGoat}, {quoted:m});
+            continue;
+          }
           if(!meta) { await sock.sendMessage(from,{text:"❌ Groupe uniquement"}, {quoted:m}); continue; } 
           const botNum = sock.user.id.replace(/[^0-9]/g,''); 
           let toKick = meta.participants.filter(p=>{ 
