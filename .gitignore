@@ -1,4 +1,5 @@
 node_modules/
+auth2/
 black_db.json
 .env
 *.log
