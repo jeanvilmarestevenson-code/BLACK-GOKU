@@ -1,7 +1,7 @@
 {
   "name": "black-goku-h24",
-  "version": "15.0.0",
-  "description": "BLACK GOKU H24 - V15 FINAL DIABOLIQUE",
+  "version": "19.0.0",
+  "description": "BLACK GOKU H24 - V19 FINAL - ALL CONFIRMATIONS",
   "main": "web.js",
   "scripts": {
     "start": "node web.js"
