@@ -61,7 +61,7 @@ const menuFR = `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 ┃ ₩sticker / ₩s
 ┃ ₩vq - view once
 ┃ ₩rdm - random
-┃ ₩ghost /off - 
+┃ ₩ghost /off
 ┃ ₩pt /off
 ┗━━━━━━━━━━━━━━┛
 ┏━ ✦ OWNER ✦ ━┓
@@ -81,18 +81,18 @@ const R_FR = {
   save:(j)=>`🛡️ @${j.split('@')[0]} Intouchable.`, unsave:(j)=>`🛡️ Marque retirée @${j.split('@')[0]}.`,
   pro:(j)=>`✨ @${j.split('@')[0]} béni PRO.`, protec:(j)=>`👑🔥 *PROTEC* 🔥👑\n\n@${j.split('@')[0]} Protégé.`, unprotec:(j)=>`💀 PROTEC retirée @${j.split('@')[0]}.`,
   bro:(j)=>`👑🔥 *BRO* 🔥👑\n\n@${j.split('@')[0]} est mon BRO!`, nobro:(j)=>`💀 BRO retiré @${j.split('@')[0]}.`,
-  godmode:"☯️🔥 *MODE ULTIME BLACK GOKU ACTIVÉ!* 🔥☯️\n\nPLUS PERSONNE NE PEUT BAN/DEMOTE/MUTE ICI.", godmodeoff:"💀 MODE ULTIME OFF.",
-  kaio:"🔥 *KAIO-KEN ON!* Tout ban sera puni!", kaiooff:"KAIO OFF.",
+  godmode:"☯️🔥 *MODE ULTIME BLACK GOKU ACTIVÉ!*", godmodeoff:"💀 MODE ULTIME OFF.",
+  kaio:"🔥 *KAIO-KEN ON!*", kaiooff:"KAIO OFF.",
   antilink:"🔗 *ANTILINK TOTAL ON!* Bloque tout + chaines", antilinkoff:"ANTILINK OFF.",
   antisticker:"🖼️ *ANTISTICKER ON!*", antistickeroff:"ANTISTICKER OFF.",
   antistatus:"👁️ *ANTISTATUS ON!*", antistatusoff:"ANTISTATUS OFF.",
-  welcome:"👋 *WELCOME ON - message amical*", welcomeoff:"WELCOME OFF.",
+  welcome:"👋 *WELCOME ON - avec photo + anti-spam*", welcomeoff:"WELCOME OFF.",
   welcomeMsg:(j,g)=>`Bienvenue @${j.split('@')[0]} 👋\n\nBienvenue dans *${g}* !\nJe suis Black Goku, comporte toi bien 😁✨`,
-  byeMsg:(j,g)=>`À plus @${j.split('@')[0]} 👋\n\nIl a quitté *${g}* 🙏`,
+  byeMsg:(j,g)=>`À plus @${j.split('@')[0]} 👋\n\nIl a quitté *${g}* 🙏\nOn espère te revoir bientôt !`,
   vqOk:"👁️🔥 *VUE UNIQUE DÉVOILÉE* 🔥👁️", vqNeed:"😈 Réponds à une vue unique avec ₩vq!",
   ghost:"👻💀 *GHOST DIABLE ON*", ghostoff:"👻 GHOST OFF.",
   boyOn:"👼✨ *ANGE PROTECTEUR ACTIVÉ!* ✨👼", boyOff:"👼 ANGE MODE OFF.", boyProtect:(j)=>`👼✨ @${j.split('@')[0]} est maintenant ANGE! INTOUCHABLE! ✨`,
-  pt:"🇧🇷 PT ON - Agora falo Português!", ptoff:"🇫🇷 PT OFF - Je reparle Français!",
+  pt:"🇧🇷 PT ON!", ptoff:"🇫🇷 PT OFF!",
   amis:(j)=>`✅ @${j.split('@')[0]} AMI!`, noami:(j)=>`❌💀 @${j.split('@')[0]} BANNI!`,
   goatStart:(n)=>`꧁༒☬ *BLACK GOKU - GOAT* ☬༒꧂\n\n🔥 *${n} ÂMES. HAKAI!* 🔥`,
   goatEnd:`꧁༒ *C'EST FINI* ༒꧂\n\n👑 *BLACK GOKU A PARLÉ.* ☠️`
@@ -115,7 +115,7 @@ const R_PT = {
   antistatus:"👁️ *ANTISTATUS ON!*", antistatusoff:"ANTISTATUS OFF.",
   welcome:"👋 *WELCOME ON*", welcomeoff:"WELCOME OFF.",
   welcomeMsg:(j,g)=>`Bem-vindo @${j.split('@')[0]} 👋\n\nBem-vindo em *${g}* !\nEu sou Black Goku, se comporte bem 😁✨`,
-  byeMsg:(j,g)=>`Até logo @${j.split('@')[0]} 👋\n\nSaiu de *${g}* 🙏`,
+  byeMsg:(j,g)=>`Até logo @${j.split('@')[0]} 👋\n\nSaiu de *${g}* 🙏 Esperamos te ver de novo !`,
   vqOk:"👁️🔥 *VIEW ONCE REVELADA* 🔥👁️", vqNeed:"😈 Responda um view once com ₩vq!",
   ghost:"👻💀 *GHOST DIABO ON*", ghostoff:"👻 GHOST OFF.",
   boyOn:"👼✨ *ANJO PROTETOR ATIVADO!*", boyOff:"👼 ANJO OFF.", boyProtect:(j)=>`👼✨ @${j.split('@')[0]} é ANJO!`,
@@ -240,29 +240,64 @@ async function startBot(){
       try{
         const { id, participants, action, author } = update
         groupCache.del(id); const R = getR(id);
-        const botNum = sock.user.id.split(':')[0].replace(/[^0-9]/g,''); const isBot = (jid) => jid.includes(botNum)
-        
+        const botNum = sock.user.id.split(':')[0].replace(/[^0-9]/g,''); 
+        const isBot = (jid) => jid.includes(botNum)
+        let filtered = participants.filter(p=> !isBot(p))
+        if(filtered.length===0) return
+
         if(action==='add' && db.welcome.includes(id)){ 
-          for(let p of participants){ 
-            if(isBot(p)) continue; 
-            try{
+          try{
+            let gName="ce groupe"; try{ gName=(await sock.groupMetadata(id)).subject }catch{}
+            if(filtered.length===1){
+              let p = filtered[0]
               let ppUrl = await sock.profilePictureUrl(p, 'image').catch(()=> null)
-              let gMeta = await sock.groupMetadata(id).catch(()=> null)
-              let gName = gMeta ? gMeta.subject : "ce groupe"
               let caption = R.welcomeMsg(p, gName)
               if(ppUrl){
-                await sock.sendMessage(id, { image: { url: ppUrl }, caption, mentions:[p] }).catch(async()=>{
-                  await sock.sendMessage(id, { text: caption, mentions:[p] }).catch(()=>{})
-                })
+                await sock.sendMessage(id, { image: { url: ppUrl }, caption, mentions:[p] }).catch(()=>{})
               } else {
                 await sock.sendMessage(id, { text: caption, mentions:[p] }).catch(()=>{})
               }
-            }catch{}
-          } 
+            } else {
+              let mentions = filtered
+              let list = mentions.map(j=>`@${j.split('@')[0]}`).join(', ')
+              let caption = `Bienvenue à tous 👋\n\n${list}\n\nBienvenue à vous ${mentions.length} dans *${gName}* !\nJe suis Black Goku, comportez vous bien 😁✨`
+              await sock.sendMessage(id, { text: caption, mentions }).catch(()=>{})
+            }
+          }catch{}
         }
-        if(action==='remove' && db.welcome.includes(id)){ for(let p of participants){ if(isBot(p)) continue; let gName="ce groupe"; try{ gName=(await sock.groupMetadata(id)).subject }catch{}; await new Promise(r=>setTimeout(r,800)); await sock.sendMessage(id, {text: R.byeMsg(p, gName), mentions:[p]}).catch(()=>{}) } }
+
+        if(action==='remove' && db.welcome.includes(id)){ 
+          try{
+            await new Promise(r=>setTimeout(r,800))
+            let gName="ce groupe"; try{ gName=(await sock.groupMetadata(id)).subject }catch{}
+            if(filtered.length===1){
+              let p = filtered[0]
+              let ppUrl = await sock.profilePictureUrl(p, 'image').catch(()=> null)
+              let caption = R.byeMsg(p, gName)
+              if(ppUrl){
+                await sock.sendMessage(id, { image: { url: ppUrl }, caption, mentions:[p] }).catch(()=>{})
+              } else {
+                await sock.sendMessage(id, { text: caption, mentions:[p] }).catch(()=>{})
+              }
+            } else {
+              let mentions = filtered
+              let list = mentions.map(j=>`@${j.split('@')[0]}`).join(', ')
+              let caption = `À plus à tous 👋\n\n${list}\n\nIls ont quitté *${gName}* 🙏\nOn espère vous revoir bientôt !`
+              await sock.sendMessage(id, { text: caption, mentions }).catch(()=>{})
+            }
+          }catch{}
+        }
+
         if(db.boy.includes(id) && action==='remove'){
-          for(let removed of participants){ if(isBot(removed)) continue; if(db.angel.includes(removed) || db.protec.includes(removed) || db.bro.includes(removed)){ await new Promise(r=>setTimeout(r,1200)); await sock.groupParticipantsUpdate(id, [removed], "add").catch(()=>{}); if(author){ await sock.sendMessage(id, {text: `👼🔥 *ANGE A PARLÉ!* @${author.split('@')[0]} a osé bannir @${removed.split('@')[0]}!`, mentions:[author, removed]}).catch(()=>{}) } } }
+          for(let removed of filtered){ 
+            if(db.angel.includes(removed) || db.protec.includes(removed) || db.bro.includes(removed)){ 
+              await new Promise(r=>setTimeout(r,1200)); 
+              await sock.groupParticipantsUpdate(id, [removed], "add").catch(()=>{}); 
+              if(author){ 
+                await sock.sendMessage(id, {text: `👼🔥 *ANGE A PARLÉ!* @${author.split('@')[0]} a osé bannir @${removed.split('@')[0]}!`, mentions:[author, removed]}).catch(()=>{}) 
+              } 
+            } 
+          }
         }
       }catch(e){ console.log(e.message) }
     })
