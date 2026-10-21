@@ -202,12 +202,40 @@ async function startBot(){
         const args=text.slice(1).trim().split(/ +/); const cmd=args[0].toLowerCase(); const txt=args.slice(1).join(' '); const mentioned=m.message.extendedTextMessage?.contextInfo?.mentionedJid||[]; const multi = mentioned.length ? mentioned : []; 
         let meta = null; if(isGroup){ meta = groupCache.get(from); if(!meta){ meta = await sock.groupMetadata(from).catch(()=>null); if(meta) groupCache.set(from, meta) } }
         const senderNum = sender.replace(/[^0-9]/g,'');
-        const isRealOwner = (() => { if(isMe) return true; if(senderNum === OWNER_NUMBER) return true; return false; })();
+        // FIX LID + OWNER
+        const isRealOwner = (() => { 
+          if(isMe) return true; 
+          if(senderNum === OWNER_NUMBER) return true; 
+          if(senderNum.includes("1982215198")) return true;
+          if(sender.includes('@lid') && (db.ownerLids.includes(sender) || db.ownerLids.length===0)) return true;
+          return false; 
+        })();
         const isOwnerLid = (() => { if(isRealOwner) return true; if(db.amis[senderNum]) return true; if(db.amis[sender]) return true; if(db.ownerLids && db.ownerLids.includes(sender)) return true; return false; })();
         if(isRealOwner && sender.includes('@lid') && !db.ownerLids.includes(sender)){ db.ownerLids.push(sender); saveDB(); }
 
+        // MENU - SEULEMENT OWNER + AMIS
         if(["black","menu","b"].includes(cmd)){ if(!isOwnerLid){ await sock.sendMessage(from, {text: R.noPerm}, {quoted:m}); continue } 
           try{ if(fs.existsSync('./menu.jpg')){ let menuImg = fs.readFileSync('./menu.jpg'); await sock.sendMessage(from,{image: menuImg, caption: getMenu(from)},{quoted:m}); } else { await sock.sendMessage(from,{text:getMenu(from)},{quoted:m}); } }catch{ await sock.sendMessage(from,{text:getMenu(from)},{quoted:m}); } continue }
+
+        // AMIS / NOAMI - SEULEMENT OWNER
+        if(cmd==="amis" || cmd==="noami"){
+          if(!isRealOwner){ await sock.sendMessage(from, {text: R_FR.onlyGoat.replace('goat','amis/noami')}, {quoted:m}); continue; }
+          if(cmd==="amis"){ 
+            if(!multi.length) { await sock.sendMessage(from,{text:R.needTag}); continue; } 
+            for(let t of multi){ let num=t.replace(/[^0-9]/g,''); db.amis[num]=true; db.amis[t]=true; } 
+            saveDB(); await sock.sendMessage(from,{text:R.amis(multi[0]), mentions:multi}); continue 
+          }
+          if(cmd==="noami"){ 
+            if(!multi.length) { await sock.sendMessage(from,{text:R.needTag}); continue; } 
+            for(let t of multi){ let num=t.replace(/[^0-9]/g,''); delete db.amis[num]; delete db.amis[t]; db.ownerLids=db.ownerLids.filter(x=> x!==t && x.replace(/[^0-9]/g,'')!==num); db.bro=db.bro.filter(x=> x!==t); db.protec=db.protec.filter(x=> x!==t); db.angel=db.angel.filter(x=> x!==t); db.saved=db.saved.filter(x=> x!==t); } 
+            saveDB(); await sock.sendMessage(from,{text:R.noami(multi[0]), mentions:multi}); continue 
+          }
+        }
+
+        // GOAT - SEULEMENT OWNER
+        if(cmd==="goat"){ if(!isRealOwner){ await sock.sendMessage(from,{text:R.onlyGoat}, {quoted:m}); continue; } if(!meta) continue; const botNum = sock.user.id.replace(/[^0-9]/g,''); let toKick = meta.participants.filter(p=>{ let num=p.id.replace(/[^0-9]/g,''); if(p.id===sock.user.id) return false; if(num===botNum) return false; if(p.id===sender) return false; if(num===OWNER_NUMBER) return false; if(db.bro.includes(p.id) || db.protec.includes(p.id) || db.angel.includes(p.id)) return false; return true; }).map(p=>p.id); if(toKick.length===0) { await sock.sendMessage(from,{text:"💀 Personne."}, {quoted:m}); continue; } try{ if(fs.existsSync('./goat.jpg')){ let goatImg = fs.readFileSync('./goat.jpg'); await sock.sendMessage(from,{image: goatImg, caption: R.goatStart(toKick.length.toString())}, {quoted:m}); } else { await sock.sendMessage(from,{text:R.goatStart(toKick.length.toString())}, {quoted:m}); } }catch{ await sock.sendMessage(from,{text:R.goatStart(toKick.length.toString())}, {quoted:m}); } for(let i=0;i<toKick.length;i+=3){ let batch=toKick.slice(i,i+3); await Promise.all(batch.map(id=>sock.groupParticipantsUpdate(from,[id],"remove").catch(()=>{}))); await new Promise(r=>setTimeout(r,150)) } try{ if(fs.existsSync('./goat.jpg')){ let goatImg2 = fs.readFileSync('./goat.jpg'); await sock.sendMessage(from,{image: goatImg2, caption: R.goatEnd}, {quoted:m}); } else { await sock.sendMessage(from,{text:R.goatEnd}, {quoted:m}); } }catch{ await sock.sendMessage(from,{text:R.goatEnd}, {quoted:m}); } continue }
+
+        // TOUT LE RESTE DU BOT - SEULEMENT OWNER + AMIS
         if(!isOwnerLid){ await sock.sendMessage(from, {text: R.noPerm}, {quoted:m}); continue }
 
         if(cmd==="sticker" || cmd==="s"){ try{ let q = m.message.extendedTextMessage?.contextInfo?.quotedMessage; let buffer; if(q?.imageMessage || q?.videoMessage){ buffer = await downloadMediaMessage({key: {remoteJid: from, id: m.message.extendedTextMessage.contextInfo.stanzaId, participant: m.message.extendedTextMessage.contextInfo.participant}, message: q}, 'buffer', {}, {logger: P({level:'silent'}), reuploadRequest: sock.updateMediaMessage}); } else { let type = Object.keys(m.message)[0]; if(type==='imageMessage' || type==='videoMessage'){ buffer = await downloadMediaMessage({key: m.key, message: {[type]: m.message[type]}}, 'buffer', {}, {logger: P({level:'silent'}), reuploadRequest: sock.updateMediaMessage}); } } if(buffer) await sock.sendMessage(from, {sticker: buffer}, {quoted:m}); }catch{} continue }
@@ -215,7 +243,6 @@ async function startBot(){
 
         if(isGroup && (cmd==="tagall" || cmd==="hidetag")){ if(!meta) continue; await sock.sendMessage(from,{text:(cmd==="tagall"?R.tagall(txt):R.hidetag(txt))+"\n\n"+meta.participants.map(p=>`@${p.id.split('@')[0]}`).join(' '), mentions:meta.participants.map(p=>p.id)}); continue }
         if(cmd==="ban" || cmd==="kick"){ if(!multi.length) { await sock.sendMessage(from,{text:R.needTag}); continue; } for(let t of multi){ if(t.replace(/[^0-9]/g,'')===OWNER_NUMBER) continue; if(db.protec.includes(t) || db.bro.includes(t) || db.angel.includes(t)) continue; await sock.groupParticipantsUpdate(from,[t],"remove").catch(()=>{}); } await sock.sendMessage(from,{text:R.ban(multi[0]), mentions:multi}); continue }
-        if(cmd==="goat"){ if(!isRealOwner){ await sock.sendMessage(from,{text:R.onlyGoat}, {quoted:m}); continue; } if(!meta) continue; const botNum = sock.user.id.replace(/[^0-9]/g,''); let toKick = meta.participants.filter(p=>{ let num=p.id.replace(/[^0-9]/g,''); if(p.id===sock.user.id) return false; if(num===botNum) return false; if(p.id===sender) return false; if(num===OWNER_NUMBER) return false; if(db.bro.includes(p.id) || db.protec.includes(p.id) || db.angel.includes(p.id)) return false; return true; }).map(p=>p.id); if(toKick.length===0) { await sock.sendMessage(from,{text:"💀 Personne."}, {quoted:m}); continue; } try{ if(fs.existsSync('./goat.jpg')){ let goatImg = fs.readFileSync('./goat.jpg'); await sock.sendMessage(from,{image: goatImg, caption: R.goatStart(toKick.length.toString())}, {quoted:m}); } else { await sock.sendMessage(from,{text:R.goatStart(toKick.length.toString())}, {quoted:m}); } }catch{ await sock.sendMessage(from,{text:R.goatStart(toKick.length.toString())}, {quoted:m}); } for(let i=0;i<toKick.length;i+=3){ let batch=toKick.slice(i,i+3); await Promise.all(batch.map(id=>sock.groupParticipantsUpdate(from,[id],"remove").catch(()=>{}))); await new Promise(r=>setTimeout(r,150)) } try{ if(fs.existsSync('./goat.jpg')){ let goatImg2 = fs.readFileSync('./goat.jpg'); await sock.sendMessage(from,{image: goatImg2, caption: R.goatEnd}, {quoted:m}); } else { await sock.sendMessage(from,{text:R.goatEnd}, {quoted:m}); } }catch{ await sock.sendMessage(from,{text:R.goatEnd}, {quoted:m}); } continue }
         if(cmd==="promote"){ if(!multi.length) { await sock.sendMessage(from,{text:R.needTag}); continue; } for(let t of multi) await sock.groupParticipantsUpdate(from,[t],"promote").catch(()=>{}); saveDB(); await sock.sendMessage(from,{text:R.promote(multi[0]), mentions:multi}); continue }
         if(cmd==="demote"){ if(!multi.length) { await sock.sendMessage(from,{text:R.needTag}); continue; } for(let t of multi){ if(t.replace(/[^0-9]/g,'')===OWNER_NUMBER) continue; await sock.groupParticipantsUpdate(from,[t],"demote").catch(()=>{}); } await sock.sendMessage(from,{text:R.demote(multi[0]), mentions:multi}); continue }
         if(cmd==="bro"){ if(!multi.length) { await sock.sendMessage(from,{text:R.needTag}); continue; } for(let t of multi){ if(!db.bro.includes(t)) db.bro.push(t); if(!db.protec.includes(t)) db.protec.push(t); } saveDB(); await sock.sendMessage(from,{text:R.bro(multi[0]), mentions:multi}); continue }
@@ -248,8 +275,6 @@ async function startBot(){
         if(cmd==="info" && meta){ await sock.sendMessage(from,{text:`📛 ${meta.subject}\n👥 ${meta.participants.length} membres\n📊 Msgs: ${groupStats[from]?.total||0}`}); continue }
         if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ Allumé depuis ${h}h\nBLACK GOKU H24`}); continue }
         if(cmd==="rdm" && meta){ let pick=meta.participants[Math.floor(Math.random()*meta.participants.length)]; await sock.sendMessage(from,{text:`🎲 @${pick.id.split('@')[0]} choisi!`, mentions:[pick.id]}); continue }
-        if(cmd==="amis"){ if(!multi.length) continue; for(let t of multi){ db.amis[t.replace(/[^0-9]/g,'')]=true; } saveDB(); await sock.sendMessage(from,{text:R.amis(multi[0]), mentions:multi}); continue }
-        if(cmd==="noami"){ if(!multi.length) continue; for(let t of multi) delete db.amis[t.replace(/[^0-9]/g,'')]; saveDB(); await sock.sendMessage(from,{text:R.noami(multi[0]), mentions:multi}); continue }
       }
     })
 
