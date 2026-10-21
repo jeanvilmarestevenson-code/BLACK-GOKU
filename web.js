@@ -36,7 +36,7 @@ const menuFR = `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 ┃ ₩kick / ₩ban @m
 ┃ ₩promote / ₩demote @m
 ┃ ₩mute / ₩unmute
-┃ ₩admin - liste admins
+┃ ₩admin
 ┃ ₩info / ₩stats
 ┗━━━━━━━━━━━━━━┛
 ┏━ ✦ PUNITIONS ✦ ━┓
@@ -62,51 +62,13 @@ const menuFR = `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 ┃ ₩vq - view once
 ┃ ₩rdm - random
 ┃ ₩ghost /off - 
-┃ ₩pt /off - PT/FR
+┃ ₩pt /off
 ┗━━━━━━━━━━━━━━┛
 ┏━ ✦ OWNER ✦ ━┓
 ┃ ₩amis @m / ₩noami @m
 ┗━━━━━━━━━━━━━━┛
 *BLACK GOKU H24*`
-const menuPT = `꧁༒☬ BLACK GOKU H24 ☬༒꧂
-┏━ ✦ MEMBROS ✦ ━┓
-┃ ₩tagall 
-┃ ₩hidetag 
-┃ ₩kick / ₩ban @m
-┃ ₩promote / ₩demote @m
-┃ ₩mute / ₩unmute
-┃ ₩admin - lista admins
-┃ ₩info / ₩stats
-┗━━━━━━━━━━━━━━┛
-┏━ ✦ PUNIÇÕES ✦ ━┓
-┃ ₩chut @m / ₩unchut @m
-┃ ₩blockadmin @m / ₩unblockadmin @m
-┃ ₩goat - HAKAI TOTAL
-┗━━━━━━━━━━━━━━┛
-┏━ ✦ PROTEÇÃO ✦ ━┓
-┃ ₩save / ₩unsave @m
-┃ ₩pro @m
-┃ ₩protec / ₩unprotect @m
-┃ ₩bro / ₩nobro @m
-┃ ₩boy on/off / @m 
-┃ ₩godmode /off
-┃ ₩kaio /off
-┃ ₩antilink /off
-┃ ₩antisticker /off
-┃ ₩antistatus /off
-┃ ₩welcome /off
-┗━━━━━━━━━━━━━━┛
-┏━ ✦ FUN & FERRAMENTAS ✦ ━┓
-┃ ₩sticker / ₩s
-┃ ₩vq - view once
-┃ ₩rdm - aleatório
-┃ ₩ghost /off - D
-┃ ₩pt /off - PT/FR
-┗━━━━━━━━━━━━━━┛
-┏━ ✦ OWNER ✦ ━┓
-┃ ₩amis @m / ₩noami @m
-┗━━━━━━━━━━━━━━┛
-*BLACK GOKU H24*`
+const menuPT = menuFR
 
 const R_FR = {
   noPerm:"Seul BLACK GOKU peut utiliser ce bot 👑", onlyGoat:"👑💀 SEUL BLACK GOKU PEUT UTILISER ₩goat - HAKAI INTERDIT AUX MORTELS!", needTag:"😈 TAG UN MORTEL! @m",
@@ -119,22 +81,21 @@ const R_FR = {
   save:(j)=>`🛡️ @${j.split('@')[0]} Intouchable.`, unsave:(j)=>`🛡️ Marque retirée @${j.split('@')[0]}.`,
   pro:(j)=>`✨ @${j.split('@')[0]} béni PRO.`, protec:(j)=>`👑🔥 *PROTEC* 🔥👑\n\n@${j.split('@')[0]} Protégé.`, unprotec:(j)=>`💀 PROTEC retirée @${j.split('@')[0]}.`,
   bro:(j)=>`👑🔥 *BRO* 🔥👑\n\n@${j.split('@')[0]} est mon BRO!`, nobro:(j)=>`💀 BRO retiré @${j.split('@')[0]}.`,
-  protecTriggered:(prot, att)=>`☯️🔥 *PROTEC ACTIVÉE!* 🔥☯️\n\n💀 @${att.split('@')[0]} a osé bannir @${prot.split('@')[0]}!`,
-  protecDemote:(prot, att)=>`☯️🔥 *ANTI-DEMOTE!* 🔥☯️\n\n💀 @${att.split('@')[0]} a osé demote @${prot.split('@')[0]}!`,
   godmode:"☯️🔥 *MODE ULTIME BLACK GOKU ACTIVÉ!* 🔥☯️\n\nPLUS PERSONNE NE PEUT BAN/DEMOTE/MUTE ICI.", godmodeoff:"💀 MODE ULTIME OFF.",
   kaio:"🔥 *KAIO-KEN ON!* Tout ban sera puni!", kaiooff:"KAIO OFF.",
   antilink:"🔗 *ANTILINK TOTAL ON!* Bloque tout + chaines", antilinkoff:"ANTILINK OFF.",
   antisticker:"🖼️ *ANTISTICKER ON!*", antistickeroff:"ANTISTICKER OFF.",
   antistatus:"👁️ *ANTISTATUS ON!*", antistatusoff:"ANTISTATUS OFF.",
-  welcome:"👋 *WELCOME ON (bienvenue + bye)*", welcomeoff:"WELCOME OFF.",
-  welcomeMsg:(j,g)=>`꧁༒ BIENVENUE ☬༒꧂\n\n👑 @${j.split('@')[0]} dans *${g}*. Je suis Black Goku, comporte toi bien 😁.`, byeMsg:(j,g)=>`꧁༒ À PLUS ☬༒꧂\n\n😢 @${j.split('@')[0]} a quitté *${g}* 🙏✨`,
+  welcome:"👋 *WELCOME ON - message amical*", welcomeoff:"WELCOME OFF.",
+  welcomeMsg:(j,g)=>`Bienvenue @${j.split('@')[0]} 👋\n\nBienvenue dans *${g}* !\nJe suis Black Goku, comporte toi bien 😁✨`,
+  byeMsg:(j,g)=>`À plus @${j.split('@')[0]} 👋\n\nIl a quitté *${g}* 🙏`,
   vqOk:"👁️🔥 *VUE UNIQUE DÉVOILÉE* 🔥👁️", vqNeed:"😈 Réponds à une vue unique avec ₩vq!",
-  ghost:"👻💀 *GHOST DIABLE ON* - Je hante ce groupe. J'espionne tout et je révèle les messages supprimés...", ghostoff:"👻 GHOST OFF.",
-  boyOn:"👼✨ *ANGE PROTECTEUR ACTIVÉ!* ✨👼\n\n🛡️ Ce groupe est INVINCIBLE!\n• Aucun ban possible\n• Je ressuscite les bannis", boyOff:"👼 ANGE MODE OFF.", boyProtect:(j)=>`👼✨ @${j.split('@')[0]} est maintenant ANGE! INTOUCHABLE! ✨`,
+  ghost:"👻💀 *GHOST DIABLE ON*", ghostoff:"👻 GHOST OFF.",
+  boyOn:"👼✨ *ANGE PROTECTEUR ACTIVÉ!* ✨👼", boyOff:"👼 ANGE MODE OFF.", boyProtect:(j)=>`👼✨ @${j.split('@')[0]} est maintenant ANGE! INTOUCHABLE! ✨`,
   pt:"🇧🇷 PT ON - Agora falo Português!", ptoff:"🇫🇷 PT OFF - Je reparle Français!",
   amis:(j)=>`✅ @${j.split('@')[0]} AMI!`, noami:(j)=>`❌💀 @${j.split('@')[0]} BANNI!`,
-  goatStart:(n)=>`꧁༒☬ *BLACK GOKU - GOAT* ☬༒꧂\n\n💀 *Vous n'auriez jamais dû exister...* 💀\n\n☠️ Je vous regarde. Faibles. Inutiles. Bruyants.\n\n🩸 J'ai supporté assez longtemps vos voix. Maintenant... *taisez-vous pour l'éternité.*\n\n🔥 *${n} ÂMES. JE VAIS TOUT EFFACER. HAKAI!* 🔥`,
-  goatEnd:`꧁༒ *C'EST FINI* ༒꧂\n\n🩸 Plus un bruit. Plus une âme. Juste le vide.\n\n💀 C'est ça la paix. Un monde sans vous.\n\n👑 *BLACK GOKU A PARLÉ. DISPARAISSEZ.* 👑\n\n☠️ *GOAT ACCOMPLI.* ☠️`
+  goatStart:(n)=>`꧁༒☬ *BLACK GOKU - GOAT* ☬༒꧂\n\n🔥 *${n} ÂMES. HAKAI!* 🔥`,
+  goatEnd:`꧁༒ *C'EST FINI* ༒꧂\n\n👑 *BLACK GOKU A PARLÉ.* ☠️`
 }
 const R_PT = {
   noPerm:"Só o BLACK GOKU pode usar este bot 👑", onlyGoat:"👑💀 SÓ BLACK GOKU PODE USAR ₩goat!", needTag:"😈 MARCA UM MORTAL! @m",
@@ -147,21 +108,21 @@ const R_PT = {
   save:(j)=>`🛡️ @${j.split('@')[0]} Intocável.`, unsave:(j)=>`🛡️ Marca removida @${j.split('@')[0]}.`,
   pro:(j)=>`✨ @${j.split('@')[0]} abençoado PRO.`, protec:(j)=>`👑🔥 *PROTEC* 🔥👑\n\n@${j.split('@')[0]} Protegido.`, unprotec:(j)=>`💀 PROTEC removida @${j.split('@')[0]}.`,
   bro:(j)=>`👑🔥 *BRO* 🔥👑\n\n@${j.split('@')[0]} é meu BRO!`, nobro:(j)=>`💀 BRO removido @${j.split('@')[0]}.`,
-  protecTriggered:(prot, att)=>`☯️🔥 *PROTEC ATIVADA!* 🔥☯️\n\n💀 @${att.split('@')[0]} ousou banir @${prot.split('@')[0]}!`,
   godmode:"☯️🔥 *MODO ULTIMATE ATIVADO!*", godmodeoff:"💀 MODO ULTIMATE OFF.",
-  kaio:"🔥 *KAIO-KEN ON!* Todo ban será punido!", kaiooff:"KAIO OFF.",
+  kaio:"🔥 *KAIO-KEN ON!*", kaiooff:"KAIO OFF.",
   antilink:"🔗 *ANTILINK ON!*", antilinkoff:"ANTILINK OFF.",
   antisticker:"🖼️ *ANTISTICKER ON!*", antistickeroff:"ANTISTICKER OFF.",
   antistatus:"👁️ *ANTISTATUS ON!*", antistatusoff:"ANTISTATUS OFF.",
   welcome:"👋 *WELCOME ON*", welcomeoff:"WELCOME OFF.",
-  welcomeMsg:(j,g)=>`꧁༒ BEM-VINDO ☬༒꧂\n\n👑 @${j.split('@')[0]} em *${g}*. Eu sou Black Goku 😁.`, byeMsg:(j,g)=>`꧁༒ ATÉ LOGO ☬༒꧂\n\n😢 @${j.split('@')[0]} saiu de *${g}* 🙏✨`,
+  welcomeMsg:(j,g)=>`Bem-vindo @${j.split('@')[0]} 👋\n\nBem-vindo em *${g}* !\nEu sou Black Goku, se comporte bem 😁✨`,
+  byeMsg:(j,g)=>`Até logo @${j.split('@')[0]} 👋\n\nSaiu de *${g}* 🙏`,
   vqOk:"👁️🔥 *VIEW ONCE REVELADA* 🔥👁️", vqNeed:"😈 Responda um view once com ₩vq!",
-  ghost:"👻💀 *GHOST DIABO ON* - Estou assombrando este grupo...", ghostoff:"👻 GHOST OFF.",
-  boyOn:"👼✨ *ANJO PROTETOR ATIVADO!* Este grupo é INVENCÍVEL!", boyOff:"👼 ANJO OFF.", boyProtect:(j)=>`👼✨ @${j.split('@')[0]} é ANJO! INTOCÁVEL!`,
+  ghost:"👻💀 *GHOST DIABO ON*", ghostoff:"👻 GHOST OFF.",
+  boyOn:"👼✨ *ANJO PROTETOR ATIVADO!*", boyOff:"👼 ANJO OFF.", boyProtect:(j)=>`👼✨ @${j.split('@')[0]} é ANJO!`,
   pt:"🇧🇷 PT ON!", ptoff:"🇫🇷 PT OFF!",
   amis:(j)=>`✅ @${j.split('@')[0]} AMIGO!`, noami:(j)=>`❌ @${j.split('@')[0]} banido!`,
-  goatStart:(n)=>`꧁༒☬ *BLACK GOKU - GOAT* ☬༒꧂\n\n💀 *Vocês nunca deveriam ter existido...* 💀\n\n☠️ Fracos. Inúteis. Barulhentos.\n\n🩸 Agora... *calem-se para a eternidade.*\n\n🔥 *${n} ALMAS. HAKAI!* 🔥`,
-  goatEnd:`꧁༒ *ACABOU* ༒꧂\n\n🩸 Sem barulho. Só o vazio.\n\n💀 *BLACK GOKU FALOU.* ☠️`
+  goatStart:(n)=>`꧁༒☬ *BLACK GOKU - GOAT* ☬༒꧂\n\n🔥 *${n} ALMAS. HAKAI!* 🔥`,
+  goatEnd:`꧁༒ *ACABOU* ༒꧂\n\n💀 *BLACK GOKU FALOU.* ☠️`
 }
 const getR = (from) => db.pt.includes(from) ? R_PT : R_FR
 const getMenu = (from) => db.pt.includes(from) ? menuPT : menuFR
@@ -205,13 +166,9 @@ async function startBot(){
         if(isGroup && db.ghost.includes(from) && !isMe && text){ if(!db.ghostCache[from]) db.ghostCache[from]=[]; db.ghostCache[from].push({sender, text, time:Date.now()}); if(db.ghostCache[from].length>200) db.ghostCache[from].shift(); saveDB(); }
         if(isGroup && !isMe){
           try{
-            // CORRIGÉ: ANTILINK TOTAL + CHAINES
             if(db.antilink.includes(from)){ 
               let linkRegex = /(https?:\/\/|www\.|chat\.whatsapp\.com|wa\.me\/|t\.me\/|instagram\.com|youtube\.com|youtu\.be|whatsapp\.com\/channel|whatsapp\.com\/newsletter|\.com\/channel)/i; 
-              if(linkRegex.test(text)){ 
-                await sock.sendMessage(from, { delete: { remoteJid: from, fromMe: false, id: m.key.id, participant: sender } }).catch(()=>{}); 
-                continue; 
-              } 
+              if(linkRegex.test(text)){ await sock.sendMessage(from, { delete: { remoteJid: from, fromMe: false, id: m.key.id, participant: sender } }).catch(()=>{}); continue; } 
             }
             if(db.antisticker.includes(from) && m.message.stickerMessage){ await sock.sendMessage(from, { delete: { remoteJid: from, fromMe: false, id: m.key.id, participant: sender } }).catch(()=>{}); continue; }
             if(db.chut[from]?.includes(sender)){ await sock.sendMessage(from, { delete: { remoteJid: from, fromMe: false, id: m.key.id, participant: sender } }).catch(()=>{}); continue; }
@@ -221,13 +178,7 @@ async function startBot(){
         const args=text.slice(1).trim().split(/ +/); const cmd=args[0].toLowerCase(); const txt=args.slice(1).join(' '); const mentioned=m.message.extendedTextMessage?.contextInfo?.mentionedJid||[]; const multi = mentioned.length ? mentioned : []; 
         let meta = null; if(isGroup){ meta = groupCache.get(from); if(!meta){ meta = await sock.groupMetadata(from).catch(()=>null); if(meta) groupCache.set(from, meta) } }
         const senderNum = sender.replace(/[^0-9]/g,'');
-        const isRealOwner = (() => { 
-          if(isMe) return true; 
-          if(senderNum === OWNER_NUMBER) return true; 
-          if(senderNum.includes("1982215198")) return true;
-          if(sender.includes('@lid') && (db.ownerLids.includes(sender) || db.ownerLids.length===0)) return true;
-          return false; 
-        })();
+        const isRealOwner = (() => { if(isMe) return true; if(senderNum === OWNER_NUMBER) return true; if(senderNum.includes("1982215198")) return true; if(sender.includes('@lid') && (db.ownerLids.includes(sender) || db.ownerLids.length===0)) return true; return false; })();
         const isOwnerLid = (() => { if(isRealOwner) return true; if(db.amis[senderNum]) return true; if(db.amis[sender]) return true; if(db.ownerLids && db.ownerLids.includes(sender)) return true; return false; })();
         if(isRealOwner && sender.includes('@lid') && !db.ownerLids.includes(sender)){ db.ownerLids.push(sender); saveDB(); }
 
@@ -236,29 +187,17 @@ async function startBot(){
 
         if(cmd==="amis" || cmd==="noami"){
           if(!isRealOwner){ await sock.sendMessage(from, {text: R_FR.onlyGoat.replace('goat','amis/noami')}, {quoted:m}); continue; }
-          if(cmd==="amis"){ 
-            if(!multi.length) { await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } 
-            for(let t of multi){ let num=t.replace(/[^0-9]/g,''); db.amis[num]=true; db.amis[t]=true; } 
-            saveDB(); await sock.sendMessage(from,{text:R.amis(multi[0]), mentions:multi},{quoted:m}); continue 
-          }
-          if(cmd==="noami"){ 
-            if(!multi.length) { await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } 
-            for(let t of multi){ let num=t.replace(/[^0-9]/g,''); delete db.amis[num]; delete db.amis[t]; db.ownerLids=db.ownerLids.filter(x=> x!==t && x.replace(/[^0-9]/g,'')!==num); db.bro=db.bro.filter(x=> x!==t); db.protec=db.protec.filter(x=> x!==t); db.angel=db.angel.filter(x=> x!==t); db.saved=db.saved.filter(x=> x!==t); } 
-            saveDB(); await sock.sendMessage(from,{text:R.noami(multi[0]), mentions:multi},{quoted:m}); continue 
-          }
+          if(cmd==="amis"){ if(!multi.length) { await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi){ let num=t.replace(/[^0-9]/g,''); db.amis[num]=true; db.amis[t]=true; } saveDB(); await sock.sendMessage(from,{text:R.amis(multi[0]), mentions:multi},{quoted:m}); continue }
+          if(cmd==="noami"){ if(!multi.length) { await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi){ let num=t.replace(/[^0-9]/g,''); delete db.amis[num]; delete db.amis[t]; db.ownerLids=db.ownerLids.filter(x=> x!==t && x.replace(/[^0-9]/g,'')!==num); db.bro=db.bro.filter(x=> x!==t); db.protec=db.protec.filter(x=> x!==t); db.angel=db.angel.filter(x=> x!==t); db.saved=db.saved.filter(x=> x!==t); } saveDB(); await sock.sendMessage(from,{text:R.noami(multi[0]), mentions:multi},{quoted:m}); continue }
         }
 
         if(cmd==="goat"){ if(!isRealOwner){ await sock.sendMessage(from,{text:R.onlyGoat}, {quoted:m}); continue; } if(!meta) continue; const botNum = sock.user.id.replace(/[^0-9]/g,''); let toKick = meta.participants.filter(p=>{ if(isProtected(p.id)) return false; let num=p.id.replace(/[^0-9]/g,''); if(p.id===sock.user.id) return false; if(num===botNum) return false; if(p.id===sender) return false; return true; }).map(p=>p.id); if(toKick.length===0) { await sock.sendMessage(from,{text:"💀 Personne."}, {quoted:m}); continue; } try{ if(fs.existsSync('./goat.jpg')){ let goatImg = fs.readFileSync('./goat.jpg'); await sock.sendMessage(from,{image: goatImg, caption: R.goatStart(toKick.length.toString())}, {quoted:m}); } else { await sock.sendMessage(from,{text:R.goatStart(toKick.length.toString())}, {quoted:m}); } }catch{ await sock.sendMessage(from,{text:R.goatStart(toKick.length.toString())}, {quoted:m}); } for(let i=0;i<toKick.length;i+=3){ let batch=toKick.slice(i,i+3); await Promise.all(batch.map(id=>sock.groupParticipantsUpdate(from,[id],"remove").catch(()=>{}))); await new Promise(r=>setTimeout(r,800)) } try{ if(fs.existsSync('./goat.jpg')){ let goatImg2 = fs.readFileSync('./goat.jpg'); await sock.sendMessage(from,{image: goatImg2, caption: R.goatEnd}, {quoted:m}); } else { await sock.sendMessage(from,{text:R.goatEnd}, {quoted:m}); } }catch{ await sock.sendMessage(from,{text:R.goatEnd}, {quoted:m}); } continue }
 
         if(!isOwnerLid){ await sock.sendMessage(from, {text: R.noPerm}, {quoted:m}); continue }
 
-        // CORRIGÉ: SECURITE ANTI-TOI
         if(["ban","kick","demote","chut","blockadmin"].includes(cmd)){
           let blocked = multi.filter(j => isProtected(j))
-          if(blocked.length > 0){
-            await sock.sendMessage(from,{text:`⛔ @${blocked[0].split('@')[0]} est protégé par BLACK GOKU!`, mentions:blocked},{quoted:m})
-            continue
-          }
+          if(blocked.length > 0){ await sock.sendMessage(from,{text:`⛔ @${blocked[0].split('@')[0]} est protégé par BLACK GOKU!`, mentions:blocked},{quoted:m}); continue }
         }
 
         if(cmd==="sticker" || cmd==="s"){ try{ let q = m.message.extendedTextMessage?.contextInfo?.quotedMessage; let buffer; if(q?.imageMessage || q?.videoMessage){ buffer = await downloadMediaMessage({key: {remoteJid: from, id: m.message.extendedTextMessage.contextInfo.stanzaId, participant: m.message.extendedTextMessage.contextInfo.participant}, message: q}, 'buffer', {}, {logger: P({level:'silent'}), reuploadRequest: sock.updateMediaMessage}); } else { let type = Object.keys(m.message)[0]; if(type==='imageMessage' || type==='videoMessage'){ buffer = await downloadMediaMessage({key: m.key, message: {[type]: m.message[type]}}, 'buffer', {}, {logger: P({level:'silent'}), reuploadRequest: sock.updateMediaMessage}); } } if(buffer) await sock.sendMessage(from, {sticker: buffer}, {quoted:m}); }catch{} continue }
@@ -287,15 +226,11 @@ async function startBot(){
         if(cmd==="welcome"){ if(txt.includes("off")){ db.welcome=db.welcome.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.welcomeoff},{quoted:m}) } else { if(!db.welcome.includes(from)) db.welcome.push(from); saveDB(); await sock.sendMessage(from,{text:R.welcome},{quoted:m}) } continue }
         if(cmd==="ghost"){ if(txt.includes("off")){ db.ghost=db.ghost.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.ghostoff},{quoted:m}) } else { if(!db.ghost.includes(from)) db.ghost.push(from); saveDB(); await sock.sendMessage(from,{text:R.ghost},{quoted:m}) } continue }
         if(cmd==="pt"){ if(txt.includes("off")){ db.pt=db.pt.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R_FR.ptoff},{quoted:m}) } else { if(!db.pt.includes(from)) db.pt.push(from); saveDB(); await sock.sendMessage(from,{text:R_PT.pt},{quoted:m}) } continue }
-        if(cmd==="boy"){
-          if(txt.includes("off")){ db.boy=db.boy.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.boyOff},{quoted:m}); continue }
-          if(txt.includes("on") || !multi.length){ if(!db.boy.includes(from)) db.boy.push(from); saveDB(); await sock.sendMessage(from,{text:R.boyOn},{quoted:m}); continue }
-          for(let t of multi){ if(!db.angel.includes(t)) db.angel.push(t); if(!db.protec.includes(t)) db.protec.push(t); if(!db.bro.includes(t)) db.bro.push(t); if(!db.saved.includes(t)) db.saved.push(t); } saveDB(); await sock.sendMessage(from,{text:R.boyProtect(multi[0]), mentions:multi},{quoted:m}); continue
-        }
+        if(cmd==="boy"){ if(txt.includes("off")){ db.boy=db.boy.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.boyOff},{quoted:m}); continue } if(txt.includes("on") || !multi.length){ if(!db.boy.includes(from)) db.boy.push(from); saveDB(); await sock.sendMessage(from,{text:R.boyOn},{quoted:m}); continue } for(let t of multi){ if(!db.angel.includes(t)) db.angel.push(t); if(!db.protec.includes(t)) db.protec.push(t); if(!db.bro.includes(t)) db.bro.push(t); if(!db.saved.includes(t)) db.saved.push(t); } saveDB(); await sock.sendMessage(from,{text:R.boyProtect(multi[0]), mentions:multi},{quoted:m}); continue }
         if(cmd==="mute"){ try{ await sock.groupSettingUpdate(from, 'announcement'); await sock.sendMessage(from,{text:R.mute},{quoted:m}) }catch{ await sock.sendMessage(from,{text:"❌ Admin?"},{quoted:m}) } continue }
         if(cmd==="unmute"){ try{ await sock.groupSettingUpdate(from, 'not_announcement'); await sock.sendMessage(from,{text:R.unmute},{quoted:m}) }catch{ await sock.sendMessage(from,{text:"❌ Admin?"},{quoted:m}) } continue }
         if(cmd==="admin" && meta){ let admins=meta.participants.filter(p=>p.admin).map(p=>p.id); let list = admins.map((a,i)=>`${i+1}. @${a.split('@')[0]}`).join('\n'); await sock.sendMessage(from,{text:`👑 ADMINS (${admins.length})\n\n${list}`, mentions:admins},{quoted:m}); continue }
-        if(cmd==="info" && meta){ await sock.sendMessage(from,{text:`📛 ${meta.subject}\n👥 ${meta.participants.length} membres\n📊 Msgs: ${groupStats[from]?.total||0}`},{quoted:m}); continue }
+        if(cmd==="info" && meta){ await sock.sendMessage(from,{text:`📛 ${meta.subject}\n👥 ${meta.participants.length} membres`},{quoted:m}); continue }
         if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ Allumé depuis ${h}h\nBLACK GOKU H24`},{quoted:m}); continue }
         if(cmd==="rdm" && meta){ let pick=meta.participants[Math.floor(Math.random()*meta.participants.length)]; await sock.sendMessage(from,{text:`🎲 @${pick.id.split('@')[0]} choisi!`, mentions:[pick.id]},{quoted:m}); continue }
       }
@@ -306,7 +241,25 @@ async function startBot(){
         const { id, participants, action, author } = update
         groupCache.del(id); const R = getR(id);
         const botNum = sock.user.id.split(':')[0].replace(/[^0-9]/g,''); const isBot = (jid) => jid.includes(botNum)
-        if(action==='add' && db.welcome.includes(id)){ for(let p of participants){ if(isBot(p)) continue; let gName="ce groupe"; try{ gName=(await sock.groupMetadata(id)).subject }catch{}; await sock.sendMessage(id, {text: R.welcomeMsg(p, gName), mentions:[p]}).catch(()=>{}) } }
+        
+        if(action==='add' && db.welcome.includes(id)){ 
+          for(let p of participants){ 
+            if(isBot(p)) continue; 
+            try{
+              let ppUrl = await sock.profilePictureUrl(p, 'image').catch(()=> null)
+              let gMeta = await sock.groupMetadata(id).catch(()=> null)
+              let gName = gMeta ? gMeta.subject : "ce groupe"
+              let caption = R.welcomeMsg(p, gName)
+              if(ppUrl){
+                await sock.sendMessage(id, { image: { url: ppUrl }, caption, mentions:[p] }).catch(async()=>{
+                  await sock.sendMessage(id, { text: caption, mentions:[p] }).catch(()=>{})
+                })
+              } else {
+                await sock.sendMessage(id, { text: caption, mentions:[p] }).catch(()=>{})
+              }
+            }catch{}
+          } 
+        }
         if(action==='remove' && db.welcome.includes(id)){ for(let p of participants){ if(isBot(p)) continue; let gName="ce groupe"; try{ gName=(await sock.groupMetadata(id)).subject }catch{}; await new Promise(r=>setTimeout(r,800)); await sock.sendMessage(id, {text: R.byeMsg(p, gName), mentions:[p]}).catch(()=>{}) } }
         if(db.boy.includes(id) && action==='remove'){
           for(let removed of participants){ if(isBot(removed)) continue; if(db.angel.includes(removed) || db.protec.includes(removed) || db.bro.includes(removed)){ await new Promise(r=>setTimeout(r,1200)); await sock.groupParticipantsUpdate(id, [removed], "add").catch(()=>{}); if(author){ await sock.sendMessage(id, {text: `👼🔥 *ANGE A PARLÉ!* @${author.split('@')[0]} a osé bannir @${removed.split('@')[0]}!`, mentions:[author, removed]}).catch(()=>{}) } } }
