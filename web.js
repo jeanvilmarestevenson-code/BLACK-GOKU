@@ -10,10 +10,10 @@ const app = express()
 const PORT = process.env.PORT || 10000
 if (!fs.existsSync('auth2')) fs.mkdirSync('auth2', { recursive: true })
 
-// === AJOUT V20 PLAY ===
-let yts, ytdl
+let yts, ytdl, playdl
 try { yts = require('yt-search'); } catch(e) {}
 try { ytdl = require('@distube/ytdl-core'); } catch(e) {}
+try { playdl = require('play-dl'); } catch(e) {}
 
 function restoreSession(){
   const sid = (process.env.SESSION_ID || "").trim()
@@ -28,13 +28,12 @@ const PREFIX = "₩"
 const DB_FILE = './black_db.json'
 const msgRetryCounterCache = new NodeCache({ stdTTL: 0, checkperiod: 0 })
 const groupCache = new NodeCache({ stdTTL: 60, useClones: false })
-let db = { amis:{}, saved:[], pro:[], protec:[], bro:[], angel:[], chut:{}, blockadmin:[], godmode:[], kaio:[], antilink:[], antisticker:[], antistatus:[], welcome:[], pt:[], ghost:[], boy:[], muted:[], autoPromote:{}, autoDemote:{}, vengeance:{}, ownerLids:[], ghostCache:{}, antilinkWarns:{}, groupList:{} }
-if (fs.existsSync(DB_FILE)) { try { db = { ...db, ...JSON.parse(fs.readFileSync(DB_FILE)) } } catch{} }
+let db = { amis:{}, saved:[], pro:[], protec:[], bro:[], angel:[], chut:{}, blockadmin:[], godmode:[], kaio:[], antilink:[], antisticker:[], antistatus:[], welcome:[], pt:[], ghost:[], boy:[], muted:[], autoPromote:{}, autoDemote:{}, vengeance:{}, ownerLids:[], ghostCache:{}, antilinkWarns:{}, groupList:{}, botOff:false }
+if (fs.existsSync(DB_FILE)) { try { db = { ...db, ...JSON.parse(fs.readFileSync(DB_FILE)) }; if(db.botOff===undefined) db.botOff=false; } catch{} }
 const saveDB = () => { try { fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2)) } catch{} }
 
 let sock, status = "Demarrage...", lastCode = "pas encore", lastQR = null, groupStats = {}, presenceInterval = null
 
-// TES MENUS ET TES R_FR / R_PT GARDÉS EXACTEMENT COMME AVANT
 const menuFR = `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 ┏━ ✦ MEMBRES ✦ ━┓
 ┃ ₩tagall 
@@ -44,6 +43,7 @@ const menuFR = `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 ┃ ₩mute / ₩unmute
 ┃ ₩admin
 ┃ ₩info / ₩stats
+┃ ₩play [son/video]
 ┗━━━━━━━━━━━━━━┛
 ┏━ ✦ PUNITIONS ✦ ━┓
 ┃ ₩chut @m / ₩unchut @m
@@ -72,8 +72,10 @@ const menuFR = `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 ┗━━━━━━━━━━━━━━┛
 ┏━ ✦ OWNER ✦ ━┓
 ┃ ₩amis @m / ₩noami @m
+┃ ₩groupe / ₩no
+┃ ₩bot on/off
 ┗━━━━━━━━━━━━━━┛
-*BLACK GOKU H24*`
+*BLACK GOKU H24 V20.4*`
 const menuPT = menuFR
 
 const R_FR = {
@@ -105,34 +107,7 @@ const R_FR = {
   goatStart:(n)=>`☯️👑 *C'EST MOI, BLACK GOKU😈. TON CAUCHEMAR.*\n\n💀 *${n} FAIBLES. JE VAIS PAS VOUS TUER... JE VAIS VOUS EFFACER DE CE MONDE COMME SI VOUS N'AVIEZ JAMAIS EXISTÉ.*\n🔥 *REGARDE BIEN. C'EST ÇA, LA FIN.*`,
   goatEnd:`꧁༒☬ *FINI* ☬༒꧂\n\n☠️ *PLUS DE VOIX. PLUS DE NOMS. PLUS RIEN.*\n🩸 *J'AI NETTOYÉ. CE GROUPE EST À MOI MAINTENANT. BLACK GOKU.* 👑`
 }
-const R_PT = {
-  noPerm:"💀 *NÃO TOQUE NO QUE NÃO É SEU, FRACO.*\n\n👑 *SÓ BLACK GOKU MANDA AQUI. VOCÊ, OBEDECE. SÓ ISSO.*",
-  onlyGoat:"👑💀 SÓ BLACK GOKU PODE USAR ₩goat!", needTag:"😈 MARCA UM MORTAL! @m",
-  ban:(j)=>`💀 HAKAI! @${j.split('@')[0]} apagado. ✅`, kick:(j)=>`💀 @${j.split('@')[0]} expulso. ✅`,
-  promote:(j)=>`👑 @${j.split('@')[0]} virou admin. ✅`, demote:(j)=>`@${j.split('@')[0]} não é mais admin. ✅`,
-  mute:"🤫 *GRUPO FECHADO!* 🔒 ✅", unmute:"🔊 *GRUPO ABERTO!* 🔓 ✅",
-  tagall:(t)=>`🔥 *BLACK GOKU CONVOCA VOCÊS!* 🔥\n\n${t||"Todos!"}`, hidetag:(t)=>`👻 Invocação...\n${t||"Marcados."}`,
-  chut:(j)=>`🔇 @${j.split('@')[0]} no Vazio. ✅`, unchut:(j)=>`🔓 @${j.split('@')[0]} pode falar. ✅`,
-  blockadmin:(j)=>`⛓️ @${j.split('@')[0]} PODERES SELADOS! ✅`, unblockadmin:(j)=>`🔓 @${j.split('@')[0]} correntes quebradas. ✅`,
-  save:(j)=>`🛡️ @${j.split('@')[0]} Intocável. ✅`, unsave:(j)=>`🛡️ Marca removida @${j.split('@')[0]}. ✅`,
-  pro:(j)=>`✨ @${j.split('@')[0]} abençoado PRO. ✅`, protec:(j)=>`👑🔥 *PROTEC* 🔥👑\n\n@${j.split('@')[0]} Protegido. ✅`, unprotec:(j)=>`💀 PROTEC removida @${j.split('@')[0]}. ✅`,
-  bro:(j)=>`👑🔥 *BRO* 🔥👑\n\n@${j.split('@')[0]} é meu BRO! ✅`, nobro:(j)=>`💀 BRO removido @${j.split('@')[0]}. ✅`,
-  godmode:"☯️🔥 *MODO ULTIMATE ATIVADO!* ✅", godmodeoff:"💀 MODO ULTIMATE OFF. ✅",
-  kaio:"🔥 *KAIO-KEN ON!* ✅", kaiooff:"KAIO OFF. ✅",
-  antilink:"🔗 *ANTILINK ON!* ✅", antilinkoff:"ANTILINK OFF. ✅",
-  antisticker:"🖼️ *ANTISTICKER ON!* ✅", antistickeroff:"ANTISTICKER OFF. ✅",
-  antistatus:"👁️ *ANTISTATUS ON!* ✅", antistatusoff:"ANTISTATUS OFF. ✅",
-  welcome:"👋 *WELCOME ON* ✅", welcomeoff:"WELCOME OFF. ✅",
-  welcomeMsg:(j,g)=>`Bem-vindo @${j.split('@')[0]} 👋\n\nBem-vindo em *${g}* !\nEu sou Black Goku, se comporte bem 😁✨`,
-  byeMsg:(j,g)=>`Até logo @${j.split('@')[0]} 👋\n\nSaiu de *${g}* 🙏 Esperamos te ver de novo !`,
-  vqOk:"👁️🔥 *VIEW ONCE REVELADA* 🔥👁️", vqNeed:"😈 Responda um view once com ₩vq!",
-  ghost:"👻💀 *GHOST DIABO ON* ✅", ghostoff:"👻 GHOST OFF. ✅",
-  boyOn:"👼✨ *ANJO PROTETOR ATIVADO!* ✅", boyOff:"👼 ANJO OFF. ✅", boyProtect:(j)=>`👼✨ @${j.split('@')[0]} é ANJO! ✅`,
-  pt:"🇧🇷 PT ON! ✅", ptoff:"🇫🇷 PT OFF! ✅",
-  amis:(j)=>`✅ @${j.split('@')[0]} AMIGO! ✅`, noami:(j)=>`❌ @${j.split('@')[0]} banido! ✅`,
-  goatStart:(n)=>`☯️👑 *SOU EU, BLACK GOKU😈. SEU PESADELO.*\n\n💀 *${n} FRACOS. NÃO VOU MATAR VOCÊS... VOU APAGAR VOCÊS DESTE MUNDO COMO SE NUNCA TIVESSEM EXISTIDO.*\n🔥 *OLHA BEM. É O FIM.*`,
-  goatEnd:`꧁༒☬ *ACABOU* ☬༒꧂\n\n☠️ *SEM VOZES. SEM NOMES. NADA.*\n🩸 *EU LIMPEI. ESTE GRUPO É MEU AGORA. BLACK GOKU.* 👑`
-}
+const R_PT = R_FR
 const getR = (from) => db.pt.includes(from) ? R_PT : R_FR
 const getMenu = (from) => db.pt.includes(from) ? menuPT : menuFR
 
@@ -149,7 +124,21 @@ function isProtected(jid){
   return false
 }
 
-app.get('/', (req,res)=> res.send(`<h1>${status}</h1><p>CODE: ${lastCode}</p><h2>BLACK GOKU V20 ONLINE</h2><a href="/pair?num=${OWNER_NUMBER}">PAIR</a> | <a href="/qr">QR</a> | <a href="/clear">CLEAR</a>`))
+function getActiveCommands(gid){
+  let actives = [];
+  if(db.antilink.includes(gid)) actives.push("antilink");
+  if(db.antisticker.includes(gid)) actives.push("antisticker");
+  if(db.antistatus.includes(gid)) actives.push("antistatus");
+  if(db.welcome.includes(gid)) actives.push("welcome");
+  if(db.ghost.includes(gid)) actives.push("ghost");
+  if(db.boy.includes(gid)) actives.push("boy");
+  if(db.godmode.includes(gid)) actives.push("godmode");
+  if(db.kaio.includes(gid)) actives.push("kaio");
+  if(db.pt.includes(gid)) actives.push("pt");
+  return actives;
+}
+
+app.get('/', (req,res)=> res.send(`<h1>${status}</h1><p>CODE: ${lastCode}</p><h2>BLACK GOKU V20.4 ONLINE - BOT:${db.botOff?'OFF':'ON'}</h2><a href="/pair?num=${OWNER_NUMBER}">PAIR</a> | <a href="/qr">QR</a> | <a href="/clear">CLEAR</a>`))
 app.get('/ping', (req,res)=> res.status(200).send('pong - '+Date.now()))
 app.get('/qr', (req,res)=>{ if(!lastQR) return res.send(`<h1>Pas de QR - ${status}</h1>`); res.send(`<div style="text-align:center"><h1>SCAN QR</h1><img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(lastQR)}"/></div>`) })
 app.get('/clear', (req,res)=>{ try{ if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true}); fs.mkdirSync('auth2',{recursive:true}); lastQR=null; if(presenceInterval) clearInterval(presenceInterval); res.send('CLEAR OK') }catch(e){ res.send(e.message) } })
@@ -175,7 +164,6 @@ async function startBot(){
         if(isGroup){ if(!db.groupList[from]) db.groupList[from] = { name: from, lastSeen: Date.now() }; }
         if(isGroup && db.ghost.includes(from) && !isMe && text){ if(!db.ghostCache[from]) db.ghostCache[from]=[]; db.ghostCache[from].push({sender, text, time:Date.now()}); if(db.ghostCache[from].length>200) db.ghostCache[from].shift(); saveDB(); }
 
-        // ANTILINK V4 - 4 WARNS
         if(isGroup && !isMe && db.antilink.includes(from)){
           try{
             let linkRegex = /(https?:\/\/|www\.|chat\.whatsapp\.com|wa\.me\/|t\.me\/|instagram\.com|youtube\.com|youtu\.be|whatsapp\.com\/channel|\.com\/channel)/i; 
@@ -194,7 +182,7 @@ async function startBot(){
                 if(count === 1) await sock.sendMessage(from, { text: `⚠️ *ANTILINK* - 1er avertissement\n\n${userName}, tu ne peux pas envoyer de liens dans *${groupName}* 🚫`, mentions:[sender] });
                 else if(count === 2) await sock.sendMessage(from, { text: `⚠️ *ANTILINK* - 2ème avertissement\n\n${userName}, encore un lien dans *${groupName}* !`, mentions:[sender] });
                 else if(count === 3) await sock.sendMessage(from, { text: `⚠️ *ANTILINK* - 3ème et DERNIER avertissement\n\n${userName}, tu abuses dans *${groupName}* !`, mentions:[sender] });
-                else if(count >= 4){ await sock.sendMessage(from, { text: `💀Je t'avais prevenus ** 💀\n\n${userName}, 3 avertissements dans *${groupName}*, tu dégages. HAKAI!`, mentions:[sender] }); await sock.groupParticipantsUpdate(from, [sender], "remove").catch(()=>{}); db.antilinkWarns[from][sender]=0; }
+                else if(count >= 4){ await sock.sendMessage(from, { text: `💀 *Je t'avais prevenu* 💀\n\n${userName}, 3 avertissements dans *${groupName}*, tu dégages. HAKAI!`, mentions:[sender] }); await sock.groupParticipantsUpdate(from, [sender], "remove").catch(()=>{}); db.antilinkWarns[from][sender]=0; }
                 saveDB(); continue;
               }
             }
@@ -209,26 +197,48 @@ async function startBot(){
         }
         if(!text) continue; text=text.trim();
 
-        // PLAY
+        // === CHECK BOT ON/OFF AVANT TOUT - SEUL OWNER PEUT BYPASS ===
+        let lowCheck = text.toLowerCase();
+        let senderNumEarly = sender.replace(/[^0-9]/g,'');
+        let isRealOwnerEarly = (() => { if(isMe) return true; if(senderNumEarly === OWNER_NUMBER) return true; if(senderNumEarly.includes("1982215198")) return true; if(sender.includes('@lid') && (db.ownerLids.includes(sender) || db.ownerLids.length===0)) return true; return false; })();
+        if(db.botOff && !isRealOwnerEarly){
+          if(lowCheck.startsWith(PREFIX)) continue; // bot éteint, ignore tout le monde sauf owner
+        }
+
+        // === PLAY V20.3 - SEULEMENT ₩play - FIX 429 ===
         let low = text.toLowerCase();
-        if(low.startsWith('.play') || low.startsWith('₩play') || low.startsWith('play ') || low.startsWith('.play ') || low.startsWith('₩play ')){
+        if(low.startsWith('₩play')){
           const senderNumP = sender.replace(/[^0-9]/g,'');
           const isRealOwnerP = senderNumP === OWNER_NUMBER || senderNumP.includes("1982215198") || (sender.includes('@lid') && db.ownerLids.includes(sender));
           const isOwnerLidP = isRealOwnerP || db.amis[senderNumP] || db.amis[sender];
           if(!isOwnerLidP){ await sock.sendMessage(from, {text: R.noPerm}, {quoted:m}); continue; }
-          let queryRaw = text.replace(/^\.play|₩play|^play/i,'').trim();
-          if(!queryRaw){ await sock.sendMessage(from, {text: "❌ Ex: .play naruto opening 1 / .play fairy tail opening 1 video / .play naruto op 1 son"}, {quoted:m}); continue; }
-          if(!yts || !ytdl){ await sock.sendMessage(from, {text: "❌ Installe: npm install yt-search @distube/ytdl-core"}, {quoted:m}); continue; }
+          if(db.botOff && !isRealOwnerP){ continue; }
+          let queryRaw = text.replace(/^₩play/i,'').trim();
+          if(!queryRaw){ await sock.sendMessage(from, {text: "❓ Ex: ₩play naruto opening 1 / ₩play naruto opening 1 video / ₩play naruto op 1 son"}, {quoted:m}); continue; }
           let isVideo = /video|mp4|clip/i.test(queryRaw);
           let searchQuery = queryRaw.replace(/video|mp4|clip|son|audio|mp3|music/gi,'').trim();
           try{
+            if(!yts) yts = require('yt-search');
             const search = await yts(searchQuery);
             const video = search.videos[0];
             if(!video){ await sock.sendMessage(from, {text: "❌ Rien trouvé: "+searchQuery}, {quoted:m}); continue; }
-            await sock.sendMessage(from, { image: { url: video.thumbnail }, caption: `🎵 *${video.title}*\n⏱️ ${video.timestamp} | 👁️ ${video.views.toLocaleString()} vues\n🔍 ${searchQuery}\n\n⏳ *Téléchargement en ${isVideo ? 'VIDÉO' : 'AUDIO'}...*` }, {quoted:m});
-            if(isVideo){ const stream = ytdl(video.url, { filter: 'audioandvideo', quality: 'lowest', highWaterMark: 1<<25 }); await sock.sendMessage(from, { video: { stream }, mimetype: 'video/mp4', caption: `🎬 ${video.title}\nBLACK GOKU V20` }, {quoted:m}); }
-            else { const stream = ytdl(video.url, { filter: 'audioonly', quality: 'highestaudio', highWaterMark: 1<<25 }); await sock.sendMessage(from, { audio: { stream }, mimetype: 'audio/mpeg', ptt: false }, {quoted:m}); }
-          }catch(e){ await sock.sendMessage(from, {text: `❌ YouTube: ${e.message}`}, {quoted:m}); }
+            await sock.sendMessage(from, { image: { url: video.thumbnail }, caption: `🎵 *${video.title}*\n⏱️ ${video.timestamp} | 👁️ ${video.views.toLocaleString()} vues\n👤 ${video.author.name}\n🔍 ${searchQuery}\n\n⏳ *Téléchargement en ${isVideo ? 'VIDÉO' : 'AUDIO'}...*` }, {quoted:m});
+            try{
+              if(!playdl) playdl = require('play-dl');
+              let yt_info = await playdl.video_info(video.url);
+              let stream = await playdl.stream_from_info(yt_info);
+              if(isVideo){ await sock.sendMessage(from, { video: { stream: stream.stream, type: stream.type }, mimetype: 'video/mp4', caption: `🎬 ${video.title}\nBLACK GOKU V20.4` }, {quoted:m}); }
+              else { await sock.sendMessage(from, { audio: { stream: stream.stream, type: stream.type }, mimetype: 'audio/mpeg', ptt: false }, {quoted:m}); }
+              continue;
+            }catch(ePlay){ console.log('play-dl fail:', ePlay.message); }
+            try{
+              if(!ytdl) ytdl = require('@distube/ytdl-core');
+              const stream = ytdl(video.url, { filter: isVideo ? 'audioandvideo' : 'audioonly', quality: isVideo ? 'lowest' : 'highestaudio', highWaterMark: 1<<25 });
+              if(isVideo){ await sock.sendMessage(from, { video: { stream }, mimetype: 'video/mp4', caption: `🎬 ${video.title}` }, {quoted:m}); }
+              else { await sock.sendMessage(from, { audio: { stream }, mimetype: 'audio/mpeg', ptt: false }, {quoted:m}); }
+              continue;
+            }catch(eYtdl){ await sock.sendMessage(from, {text: `⚠️ YouTube bloque (429)\n\n🎵 *${video.title}*\n🔗 ${video.url}`}, {quoted:m}); }
+          }catch(e){ await sock.sendMessage(from, {text: `❌ Erreur: ${e.message}`}, {quoted:m}); }
           continue;
         }
 
@@ -239,6 +249,21 @@ async function startBot(){
         const isRealOwner = (() => { if(isMe) return true; if(senderNum === OWNER_NUMBER) return true; if(senderNum.includes("1982215198")) return true; if(sender.includes('@lid') && (db.ownerLids.includes(sender) || db.ownerLids.length===0)) return true; return false; })();
         const isOwnerLid = (() => { if(isRealOwner) return true; if(db.amis[senderNum]) return true; if(db.amis[sender]) return true; if(db.ownerLids && db.ownerLids.includes(sender)) return true; return false; })();
         if(isRealOwner && sender.includes('@lid') && !db.ownerLids.includes(sender)){ db.ownerLids.push(sender); saveDB(); }
+
+        // === ₩bot on/off - SEUL OWNER CREATEUR - MEME PAS AMIS ===
+        if(cmd==="bot"){
+          if(!isRealOwner){ await sock.sendMessage(from, {text: R_FR.onlyGoat.replace('goat','bot'), mentions:[]}, {quoted:m}); continue; }
+          if(txt.toLowerCase().includes("off")){
+            db.botOff = true; saveDB();
+            await sock.sendMessage(from, {text: "💀 *BLACK GOKU ÉTEINT* 💀\n\n🔒 Le bot est fermé.\n👑 Seul le créateur peut le rallumer avec `₩bot on`\n❌ Même les ₩amis ne peuvent plus l'utiliser."}, {quoted:m});
+          } else if(txt.toLowerCase().includes("on")){
+            db.botOff = false; saveDB();
+            await sock.sendMessage(from, {text: "☯️🔥 *BLACK GOKU ALLUMÉ* 🔥☯️\n\n✅ Le bot est de retour!\nTout le monde peut l'utiliser."}, {quoted:m});
+          } else {
+            await sock.sendMessage(from, {text: `🤖 Bot est actuellement: *${db.botOff ? 'OFF 🔴' : 'ON 🟢'}*\n\nUtilise:\n₩bot on = allumer\n₩bot off = éteindre (seul créateur)`}, {quoted:m});
+          }
+          continue;
+        }
 
         if(["black","menu","b"].includes(cmd)){ if(!isOwnerLid){ await sock.sendMessage(from, {text: R.noPerm}, {quoted:m}); continue } try{ if(fs.existsSync('./menu.jpg')){ let menuImg = fs.readFileSync('./menu.jpg'); await sock.sendMessage(from,{image: menuImg, caption: getMenu(from)},{quoted:m}); } else { await sock.sendMessage(from,{text:getMenu(from)},{quoted:m}); } }catch{ await sock.sendMessage(from,{text:getMenu(from)},{quoted:m}); } continue }
 
@@ -289,20 +314,55 @@ async function startBot(){
         if(cmd==="mute"){ try{ await sock.groupSettingUpdate(from, 'announcement'); await sock.sendMessage(from,{text:R.mute},{quoted:m}) }catch{ await sock.sendMessage(from,{text:"❌ Admin? ✅ vérifié"}, {quoted:m}) } continue }
         if(cmd==="unmute"){ try{ await sock.groupSettingUpdate(from, 'not_announcement'); await sock.sendMessage(from,{text:R.unmute},{quoted:m}) }catch{ await sock.sendMessage(from,{text:"❌ Admin? ✅ vérifié"}, {quoted:m}) } continue }
         if(cmd==="admin" && meta){ let admins=meta.participants.filter(p=>p.admin).map(p=>p.id); let list = admins.map((a,i)=>`${i+1}. @${a.split('@')[0]}`).join('\n'); await sock.sendMessage(from,{text:`👑 ADMINS (${admins.length})\n\n${list} ✅`, mentions:admins},{quoted:m}); continue }
-        if(cmd==="info" && meta){ 
-          let admins=meta.participants.filter(p=>p.admin);
-          let desc = meta.desc || "non description";
-          let totalMsg = groupStats[from] ? groupStats[from].total : 0;
-          await sock.sendMessage(from,{text:`📛 ${meta.subject}\n\n📝 Description: ${desc}\n\n👥 ${meta.participants.length} membres\n👑 Admins: ${admins.length}\n${admins.map((a,i)=>`${i+1}. @${a.id.split('@')[0]}`).join('\n')}\n\n💬 Messages comptés: ${totalMsg}\n🆔 ${from}`, mentions: admins.map(a=>a.id)},{quoted:m}); continue 
-        }
+        if(cmd==="info" && meta){ let admins=meta.participants.filter(p=>p.admin); let desc = meta.desc || "non description"; let totalMsg = groupStats[from] ? groupStats[from].total : 0; await sock.sendMessage(from,{text:`📛 ${meta.subject}\n\n📝 Description: ${desc}\n\n👥 ${meta.participants.length} membres\n👑 Admins: ${admins.length}\n${admins.map((a,i)=>`${i+1}. @${a.id.split('@')[0]}`).join('\n')}\n\n💬 Messages comptés: ${totalMsg}\n🆔 ${from}`, mentions: admins.map(a=>a.id)},{quoted:m}); continue }
+
         if(cmd==="groupe" || cmd==="groupes"){ 
           if(!isRealOwner){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; }
           let allGroups = await sock.groupFetchAllParticipating().catch(()=>({}));
-          let txtGroupe = `📊 *BLACK GOKU - GROUPES*\n\n🤖 Actif dans ${Object.keys(allGroups).length} groupes\n\n🔗 Antilink: ${db.antilink.length}\n👼 Boy: ${db.boy.length}\n👋 Welcome: ${db.welcome.length}\n👻 Ghost: ${db.ghost.length}\n\n📋 *Liste:*\n`;
-          let i=0; for(let gid in allGroups){ i++; let g = allGroups[gid]; txtGroupe += `${i}. ${g.subject} - ${g.participants.length} mb\n`; if(i>30) break; }
+          let botId = sock.user.id;
+          let txtGroupe = "";
+          let countAdmin = 0;
+          for(let gid in allGroups){
+            let g = allGroups[gid];
+            let isAdmin = g.participants.some(p => p.id === botId && (p.admin === 'admin' || p.admin === 'superadmin'));
+            if(!isAdmin) continue;
+            countAdmin++;
+            let actives = getActiveCommands(gid);
+            if(actives.length === 0){
+              txtGroupe += `• Groupe "${g.subject}" - 0 commande active\n`;
+            } else {
+              txtGroupe += `• Groupe "${g.subject}" - ${actives.length} commande actif = ${actives.join(' et ')}\n`;
+            }
+          }
+          if(countAdmin===0) txtGroupe = "❌ Aucun groupe où je suis admin.";
+          else txtGroupe = `📊 *BLACK GOKU - ${countAdmin} GROUPES ADMIN*\n\n` + txtGroupe;
           await sock.sendMessage(from,{text: txtGroupe},{quoted:m}); continue;
         }
-        if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ Allumé depuis ${h}h\nBLACK GOKU H24 ✅`},{quoted:m}); continue }
+
+        if(cmd==="no"){ 
+          if(!isRealOwner){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; }
+          let allGroups = await sock.groupFetchAllParticipating().catch(()=>({}));
+          let botId = sock.user.id;
+          let txtNo = "";
+          let countNo = 0;
+          for(let gid in allGroups){
+            let g = allGroups[gid];
+            let isAdmin = g.participants.some(p => p.id === botId && (p.admin === 'admin' || p.admin === 'superadmin'));
+            if(isAdmin) continue;
+            countNo++;
+            let actives = getActiveCommands(gid);
+            if(actives.length === 0){
+              txtNo += `• Groupe "${g.subject}" - 0 commande active\n`;
+            } else {
+              txtNo += `• Groupe "${g.subject}" - ${actives.length} commande actif = ${actives.join(' et ')}\n`;
+            }
+          }
+          if(countNo===0) txtNo = "✅ Je suis admin partout, aucun groupe non-admin.";
+          else txtNo = `📊 *BLACK GOKU - ${countNo} GROUPES NON-ADMIN*\n\n` + txtNo;
+          await sock.sendMessage(from,{text: txtNo},{quoted:m}); continue;
+        }
+
+        if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ Allumé depuis ${h}h\nBLACK GOKU V20.4 - BOT:${db.botOff?'OFF 🔴':'ON 🟢'} ✅`},{quoted:m}); continue }
         if(cmd==="rdm" && meta){ let pick=meta.participants[Math.floor(Math.random()*meta.participants.length)]; await sock.sendMessage(from,{text:`🎲 @${pick.id.split('@')[0]} choisi! ✅`, mentions:[pick.id]},{quoted:m}); continue }
       }
     })
@@ -362,4 +422,4 @@ async function startBot(){
   }catch(e){ setTimeout(startBot,3000) }
 }
 startBot()
-app.listen(PORT, '0.0.0.0', ()=>console.log("BLACK GOKU V20 LIVE "+PORT))
+app.listen(PORT, '0.0.0.0', ()=>console.log("BLACK GOKU V20.4 LIVE "+PORT))
