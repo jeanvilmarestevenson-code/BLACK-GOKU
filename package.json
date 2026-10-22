@@ -1,7 +1,7 @@
 {
   "name": "black-goku-h24",
-  "version": "19.0.0",
-  "description": "BLACK GOKU H24 - V19 FINAL - ALL CONFIRMATIONS",
+  "version": "20.0.0",
+  "description": "BLACK GOKU H24 - V20 - PLAY + BOY OWNER ONLY + ANTILINK 4 WARNS + GROUPE/INFO V2",
   "main": "web.js",
   "scripts": {
     "start": "node web.js"
@@ -10,7 +10,9 @@
     "@whiskeysockets/baileys": "^6.7.18",
     "express": "^4.18.2",
     "pino": "^8.17.0",
-    "node-cache": "^5.1.2"
+    "node-cache": "^5.1.2",
+    "yt-search": "^2.12.1",
+    "@distube/ytdl-core": "^4.13.5"
   },
   "engines": {
     "node": "20.x"
