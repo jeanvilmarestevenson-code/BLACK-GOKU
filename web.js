@@ -42,9 +42,9 @@ const menuFR = `꧁༒☬ BLACK GOKU H24 ☬༒꧂
 ┃ ₩promote / ₩demote @m
 ┃ ₩mute / ₩unmute
 ┃ ₩admin / ₩info / ₩stats
-┃ ₩play [son/video]
-┃ ₩goku - image Black Goku
-┃ ₩kaio - image KAIO-KEN
+┃ ₩play 
+┃ ₩goku 
+┃ ₩kaio 
 ┗━━━━━━━━━━━━━━┛
 ┏━ ✦ PUNITIONS ✦ ━┓
 ┃ ₩chut @m / ₩unchut @m
@@ -150,11 +150,54 @@ function amIAdmin(g){
   return me && (me.admin === 'admin' || me.admin === 'superadmin');
 }
 
-app.get('/', (req,res)=> res.send(`<h1>${status}</h1><h2>BLACK GOKU V20.6 - BOT:${db.botOff?'OFF':'ON'}</h2>`))
+// ===== NOUVELLE PAGE D'ACCUEIL AVEC OPTIONS =====
+app.get('/', (req,res)=> res.send(`
+<html>
+<head><title>BLACK GOKU V20.6</title><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}
+.card{background:#1a1a1a;border-radius:15px;padding:20px;margin:20px auto;max-width:500px;border:1px solid #333}
+h1{color:#ff0040}
+.btn{display:block;background:#ff0040;color:#fff;padding:15px;margin:10px 0;border-radius:10px;text-decoration:none;font-weight:bold;font-size:18px}
+.btn2{background:#222;border:1px solid #ff0040}
+input{padding:12px;width:80%;border-radius:8px;border:none;margin:10px 0}
+small{color:#888}
+</style>
+</head>
+<body>
+<h1>☯️ BLACK GOKU V20.6</h1>
+<div class="card">
+<h2>${status}</h2>
+<h3>BOT: ${db.botOff?'OFF 🔴':'ON 🟢'}</h3>
+<p>Connecte ton WhatsApp:</p>
+<a class="btn" href="/qr">📱 VOIR QR CODE</a>
+<a class="btn btn2" href="/pair?num=${OWNER_NUMBER}">🔢 PAIR CODE - ${OWNER_NUMBER}</a>
+<form action="/pair" method="get" style="margin-top:15px">
+<input type="text" name="num" placeholder="Ton numéro ex: 55123456789" />
+<button class="btn" type="submit">Generer Pair Code custom</button>
+</form>
+<a class="btn btn2" href="/clear" onclick="return confirm('Effacer session?')">🗑️ CLEAR SESSION</a>
+</div>
+<div class="card"><small>Si BOT est ACTIF ✅ ton bot est déjà connecté. Si tu vois Demarrage... attends le QR ou utilise Pair Code.</small></div>
+<script>setTimeout(()=>location.reload(), 15000)</script>
+</body>
+</html>
+`))
 app.get('/ping', (req,res)=> res.status(200).send('pong'))
-app.get('/qr', (req,res)=>{ if(!lastQR) return res.send(`Pas de QR - ${status}`); res.send(`<img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(lastQR)}"/>`) })
-app.get('/clear', (req,res)=>{ try{ if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true}); fs.mkdirSync('auth2',{recursive:true}); res.send('CLEAR OK') }catch(e){ res.send(e.message) } })
-app.get('/pair', async(req,res)=>{ let num=(req.query.num||'').replace(/[^0-9]/g,'')||OWNER_NUMBER; try{ await new Promise(r=>setTimeout(r,2000)); let code=await sock.requestPairingCode(num); lastCode=code; res.send(`<h1>${code}</h1>`) }catch(e){ res.send('Erreur: '+e.message) } })
+app.get('/qr', (req,res)=>{ 
+  if(!lastQR) return res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:50px"><h1>Pas de QR - ${status}</h1><p>Attends 10s ou va sur <a href="/pair?num=${OWNER_NUMBER}" style="color:#ff0040">Pair Code</a></p><p><a href="/" style="color:#fff">Retour</a></p><script>setTimeout(()=>location.reload(),5000)</script></body></html>`); 
+  res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:20px"><h1>📱 SCANNE CE QR</h1><img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(lastQR)}" style="border:10px solid #fff;border-radius:10px"/><p style="margin-top:20px"><a href="/" style="color:#ff0040">Retour accueil</a></p><script>setTimeout(()=>location.reload(),15000)</script></body></html>`) 
+})
+app.get('/clear', (req,res)=>{ try{ if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true}); fs.mkdirSync('auth2',{recursive:true}); res.send('<h1>CLEAR OK</h1><a href="/">Retour</a>') }catch(e){ res.send(e.message) } })
+app.get('/pair', async(req,res)=>{ 
+  let num=(req.query.num||'').replace(/[^0-9]/g,'')||OWNER_NUMBER; 
+  try{ 
+    await new Promise(r=>setTimeout(r,2000)); 
+    let code=await sock.requestPairingCode(num); 
+    lastCode=code; 
+    res.send(`<html><body style="background:#0a0a0a;color:#fff;text-align:center;padding:30px;font-family:Arial"><h1 style="color:#ff0040">TON CODE:</h1><h1 style="font-size:50px;letter-spacing:5px;background:#1a1a1a;padding:20px;border-radius:15px;border:2px solid #ff0040">${code}</h1><p>Va sur WhatsApp > Appareils liés > Lier un appareil > Lier avec numéro de téléphone</p><p>Entre ce code</p><p><a href="/" style="color:#ff0040">Retour</a></p></body></html>`) 
+  }catch(e){ res.send('Erreur: '+e.message+'<br><a href="/">Retour</a>') } 
+})
 
 async function startBot(){
   try{
