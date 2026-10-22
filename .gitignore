@@ -19,10 +19,14 @@ baileys_store.json
 *.session
 *.session-journal
 
-# Images - sauf menu et goat
+# Images - on garde menu et goat seulement
 *.jpg
 *.png
 !menu.jpg
 !goat.jpg
+!**/menu.jpg
+!**/goat.jpg
+
+# On garde assets si tu en as
 !assets/
 !assets/**
