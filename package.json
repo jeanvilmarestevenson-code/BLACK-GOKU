@@ -1,7 +1,7 @@
 {
   "name": "black-goku-h24",
-  "version": "20.0.0",
-  "description": "BLACK GOKU H24 - V20 - PLAY + BOY OWNER ONLY + ANTILINK 4 WARNS + GROUPE/INFO V2",
+  "version": "20.6.0",
+  "description": "BLACK GOKU H24 - V20.6 - GOKU KAIO IMAGES + PLAY + BOY OWNER ONLY + ANTILINK 4 WARNS",
   "main": "web.js",
   "scripts": {
     "start": "node web.js"
@@ -12,7 +12,8 @@
     "pino": "^8.17.0",
     "node-cache": "^5.1.2",
     "yt-search": "^2.12.1",
-    "@distube/ytdl-core": "^4.13.5"
+    "@distube/ytdl-core": "^4.13.5",
+    "play-dl": "^1.9.7"
   },
   "engines": {
     "node": "20.x"
