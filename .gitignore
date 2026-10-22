@@ -19,13 +19,18 @@ baileys_store.json
 *.session
 *.session-journal
 
-# Images - on garde menu et goat seulement
+# Images - on garde TOUTES les images du bot
 *.jpg
 *.png
 !menu.jpg
 !goat.jpg
+!goku.jpg
+!kaio.jpg
+!black-goku.jpg
 !**/menu.jpg
 !**/goat.jpg
+!**/goku.jpg
+!**/kaio.jpg
 
 # On garde assets si tu en as
 !assets/
