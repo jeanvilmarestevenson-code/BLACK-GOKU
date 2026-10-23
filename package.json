@@ -1,7 +1,7 @@
 {
   "name": "black-goku-h24",
   "version": "21.9.5",
-  "description": "BLACK GOKU V21.9.5 FULL NO BAD MAC - TOUTES COMMANDES",
+  "description": "BLACK GOKU V21.9.5 FULL NO BAD MAC - GOOGLE CHROME UBUNTU - TOUTES COMMANDES",
   "main": "web.js",
   "scripts": { "start": "node web.js" },
   "dependencies": {
