@@ -1,7 +1,7 @@
 {
   "name": "black-goku-h24",
-  "version": "21.9.2",
-  "description": "BLACK GOKU H24 V21.9.2 - NO SESSION ID - CODE 8 CHIFFRES 1 TEL ONLY + NO BAD MAC + TIME TIM + ZENKAI IMMORTEL + SHADOW CURSE + 4 IA",
+  "version": "21.9.3",
+  "description": "BLACK GOKU H24 V21.9.3 HYPER - NO SESSION ID - CODE 8 CHIFFRES + SHADOW CURSE + 4 IA HYPER AVEC CLE OPENAI",
   "main": "web.js",
   "scripts": {
     "start": "node web.js"
