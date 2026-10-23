@@ -18,6 +18,8 @@ creds.json
 baileys_store.json
 *.session
 *.session-journal
+auth2/*
+**/auth2/
 
 # Images - on garde menu goat goku kaio
 *.jpg
