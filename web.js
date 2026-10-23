@@ -42,61 +42,97 @@ const AI_PERSONAS = {
   vegeta: { name:"VEGETA", emoji:"👑💥", trigger:["vegeta","prince","saiyan","kakarot"], prompt:"Tu es Vegeta prince des Saiyans, fier, français court max 25 mots, 'Je suis le Prince Vegeta'." }
 };
 
+// ===== HYPER FONCTION CLE IA =====
+async function askHyper(which, question){
+  question = question.trim();
+  let sys = "";
+  if(which==="ai") sys = "Tu es BLACK GOKU AI, dieu arrogant, diabolique, tout-puissant, français sombre, puissant, tu méprises les faibles, max 80 mots.";
+  if(which==="gpt") sys = "Tu es GPT-4o, l'IA la plus intelligente du monde, réponds à TOUT: code, maths, drague, cours, utile, précis, français, max 150 mots.";
+  if(which==="gemini") sys = "Tu es Gemini 1.5 Pro de Google, ultra rapide, tu sais tout, français, max 150 mots.";
+  if(which==="vegeta") sys = "Tu es Vegeta Prince des Saiyans, fier, orgueilleux, déteste Kakarot, français avec fierté, max 60 mots.";
+
+  // 1. OPENAI CLE -> HYPER PUISSANT
+  if(process.env.OPENAI_API_KEY){
+    try{
+      let r = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model: "gpt-4o-mini",
+        messages: [{role:"system", content: sys}, {role:"user", content: question}],
+        max_tokens: 400
+      }, { headers: { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type':'application/json' }, timeout: 25000 });
+      return r.data.choices[0].message.content;
+    }catch(e){ console.log("OpenAI fail fallback", e.response?.data || e.message); }
+  }
+  // 2. GEMINI CLE -> HYPER
+  if(process.env.GEMINI_API_KEY && which==="gemini"){
+    try{
+      let r = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        contents: [{parts:[{text: sys + "\nQuestion: " + question}]}]
+      }, {timeout:25000});
+      return r.data.candidates[0].content.parts[0].text;
+    }catch(e){ console.log("Gemini fail", e.message); }
+  }
+  // 3. FALLBACK GRATUIT (Pollinations) - marche sans clé
+  try{
+    let r = await axios.get(`https://text.pollinations.ai/${encodeURIComponent(sys + "\nQuestion: " + question + "\nRéponds français max 150 mots:")}`, {timeout:20000});
+    return typeof r.data === 'string' ? r.data : JSON.stringify(r.data);
+  }catch{ return "💀 Black Goku réfléchit... Réessaie."; }
+}
+
 const menuFR = `꧁༒☬ BLACK GOKU ☬༒꧂
 ┏━ ✦ MEMBRES ✦ ━┓
-┃ 1. ₩tagall
-┃ 2. ₩hidetag
-┃ 3. ₩kick / ₩ban @m
-┃ 4. ₩promote / ₩demote @m
-┃ 5. ₩mute / ₩unmute
-┃ 6. ₩admin / ₩info / ₩stats
-┃ 7. ₩play son/video
-┃ 8. ₩goku / ₩kaio
-┃ 9. ₩time (10-0) / ₩tim (30-0)
+┃ ₩tagall
+┃ ₩hidetag
+┃ ₩kick / ₩ban @m
+┃ ₩promote / ₩demote @m
+┃ ₩mute / ₩unmute
+┃ ₩admin / ₩info / ₩stats
+┃ ₩play son/video
+┃ ₩goku / ₩kaio
+┃ ₩time
+┃ ₩tim
 ┗━━━━━━━━━━━━━━┛
 ┏━ ✦ PUNITIONS ✦ ━┓
-┃ 1. ₩chut @m / ₩unchut @m
-┃ 2. ₩blockadmin @m / ₩unblockadmin @m
-┃ 3. ₩reini @m
-┃ 4. ₩curse @m / ₩uncurse @m - SHADOW
-┃ 5. ₩neant
-┃ 6. ₩goat - HAKAI
+┃ ₩chut @m / ₩unchut @m
+┃ ₩blockadmin @m / ₩unblockadmin @m
+┃ ₩reini @m
+┃ ₩curse @m / ₩uncurse @m
+┃ ₩neant
+┃ ₩goat - HAKAI
 ┗━━━━━━━━━━━━━━┛
 ┏━ ✦ PROTECTION ✦ ━┓
-┃ 1. ₩save / ₩unsave @m
-┃ 2. ₩pro @m
-┃ 3. ₩protec / ₩unprotect @m
-┃ 4. ₩zenkai / ₩nozenkai @m
-┃ 5. ₩boy on/off / @m
-┃ 6. ₩godmode /off
-┃ 7. ₩kaio /off
-┃ 8. ₩antilink /off
-┃ 9. ₩antibod 1/2/3/off
-┃ 10. ₩antilock /off
-┃ 11. ₩antidemote /off
-┃ 12. ₩antisticker /off
-┃ 13. ₩antistatus /off
-┃ 14. ₩welcome /off
-┃ 15. ₩ghost /off
-┃ 16. ₩pt /off
+┃ ₩save / ₩unsave @m
+┃ ₩pro @m
+┃ ₩protec / ₩unprotect @m
+┃ ₩zenkai / ₩nozenkai @m
+┃ ₩boy on/off / @m
+┃ ₩godmode /off
+┃ ₩kaio /off
+┃ ₩antilink /off
+┃ ₩antibod 
+┃ ₩antilock /off
+┃ ₩antidemote /off
+┃ ₩antisticker /off
+┃ ₩antistatus /off
+┃ ₩welcome /off
+┃ ₩ghost /off
+┃ ₩pt /off
 ┗━━━━━━━━━━━━━━┛
-┏━ ✦ IA ✦ ━┓
-┃ 1. ₩ai question
-┃ 2. ₩gpt question
-┃ 3. ₩gemini question
-┃ 4. ₩vegeta question
-┃ 5. ₩aion - Active les 4 IA auto
-┃ 6. ₩aioff - Désactive tout
-┃ 7. ₩gpton / ₩geminion / ₩vegetaon
-┃ 8. ₩aistatus
+┏━ ✦ IA HYPER ✦ ━┓
+┃ ₩ai question
+┃ ₩gpt question
+┃ ₩gemini 
+┃ ₩vegeta 
+┃ ₩aion -
+┃ ₩aioff
+┃ ₩aistatus
 ┗━━━━━━━━━━━━━━┛
 ┏━ ✦ OWNER ✦ ━┓
-┃ 1. ₩amis @m / ₩noami @m
-┃ 2. ₩groupe / ₩no
-┃ 3. ₩bot on/off
-┃ 4. ₩rdm
-┃ 5. ₩vq
-┃ 6. ₩help
+┃ ₩amis @m / ₩noami @m
+┃ ₩groupe / ₩no
+┃ ₩bot on/off
+┃ ₩rdm
+┃ ₩vq
+┃ ₩help
 ┗━━━━━━━━━━━━━━┛
   *BLACK GOKU*`
 const R_FR = {
@@ -180,7 +216,7 @@ function amIAdmin(g){
   let me = g.participants.find(p => p.id === myId || p.id.replace(/[^0-9]/g,'').includes(myNum));
   return me && (me.admin === 'admin' || me.admin === 'superadmin');
 }
-app.get('/', (req,res)=> res.send(`<html><head><title>BLACK GOKU V21.9.2</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}h1{color:#a020f0}a,button{background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none;display:inline-block;margin:10px;font-weight:bold;border:none;font-size:16px;cursor:pointer}input{padding:15px;border-radius:10px;border:none;width:80%;max-width:300px;margin:10px;text-align:center;font-size:16px}.card{background:#1a1a1a;padding:20px;border-radius:15px;margin:20px auto;max-width:400px;border:1px solid #a020f0}</style></head><body><h1>☯️ BLACK GOKU V21.9.2 NO SESSION ID</h1><h2>${status} - BOT:${db.botOff?'OFF 🔴':'ON 🟢'}</h2><div class="card"><h3>🔢 CODE 8 CHIFFRES - 1 TEL</h3><p>5551982215198</p><input id="num" value="5551982215198"><br><button onclick="let n=document.getElementById('num').value.replace(/[^0-9]/g,''); location.href='/pair?num='+n">OBTENIR CODE</button></div><div class="card"><a href="/qr" target="_blank">QR CODE</a></div><div class="card"><a href="/clear" style="background:#ff0040">CLEAR SESSION</a></div></body></html>`))
+app.get('/', (req,res)=> res.send(`<html><head><title>BLACK GOKU V21.9.3</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}h1{color:#a020f0}a,button{background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none;display:inline-block;margin:10px;font-weight:bold;border:none;font-size:16px;cursor:pointer}input{padding:15px;border-radius:10px;border:none;width:80%;max-width:300px;margin:10px;text-align:center;font-size:16px}.card{background:#1a1a1a;padding:20px;border-radius:15px;margin:20px auto;max-width:400px;border:1px solid #a020f0}</style></head><body><h1>☯️ BLACK GOKU V21.9.3 HYPER</h1><h2>${status} - BOT:${db.botOff?'OFF 🔴':'ON 🟢'} - IA:${process.env.OPENAI_API_KEY?'HYPER ✅':'GRATUIT'}</h2><div class="card"><h3>🔢 CODE 8 CHIFFRES - 1 TEL</h3><p>5551982215198</p><input id="num" value="5551982215198"><br><button onclick="let n=document.getElementById('num').value.replace(/[^0-9]/g,''); location.href='/pair?num='+n">OBTENIR CODE</button></div><div class="card"><a href="/qr" target="_blank">QR CODE</a></div><div class="card"><a href="/clear" style="background:#ff0040">CLEAR SESSION</a></div></body></html>`))
 app.get('/qr', (req,res)=>{ if(!lastQR) return res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:50px"><h1>Pas de QR - ${status}</h1><p>Attends 10s</p><a href="/" style="color:#a020f0">Retour</a><script>setTimeout(()=>location.reload(),5000)</script></body></html>`); res.send(`<html><body style="text-align:center;background:#000;padding:20px"><h1 style="color:#a020f0">SCANNE CE QR</h1><img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(lastQR)}" style="border:10px solid #a020f0;border-radius:20px"/><br><br><a href="/" style="background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none">Retour</a><script>setTimeout(()=>location.reload(),20000)</script></body></html>`) })
 app.get('/clear', (req,res)=>{ try{ if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true}); fs.mkdirSync('auth2',{recursive:true}); lastQR=null; status="CLEAR OK - Redemarrage..."; res.send('CLEAR OK - Attends 25s puis /pair'); setTimeout(()=>{ try{ startBot(); }catch{} },1500); }catch(e){ res.send(e.message) } })
 app.get('/pair', async(req,res)=>{ 
@@ -228,8 +264,6 @@ async function startBot(){
       const R = getR();
       if(!groupStats[from]) groupStats[from] = { total: 0 }; groupStats[from].total++;
       if(isGroup && db.ghost.includes(from) && !isMe && text){ if(!db.ghostCache[from]) db.ghostCache[from]=[]; db.ghostCache[from].push({sender, text, time:Date.now(), id:m.key.id}); if(db.ghostCache[from].length>200) db.ghostCache[from].shift(); saveDB(); }
-
-      // ====== SHADOW CURSE DIABOLIQUE - VOIX VOLÉE ======
       if(isGroup && db.curse && db.curse[from]?.includes(sender) && !isMe && !isProtected(sender)){
         let originalText = text || "une photo/vidéo";
         if(originalText.length > 100) originalText = originalText.slice(0,100)+"...";
@@ -255,7 +289,6 @@ async function startBot(){
         }
         continue;
       }
-
       if(isGroup && !isMe && db.antilink.includes(from)){
         try{
           let tlow = text.toLowerCase();
@@ -293,24 +326,19 @@ async function startBot(){
         }catch{}
       }
       if(!text) continue; text=text.trim();
-
-      // ====== IA DIRECTE: ₩ai / ₩gpt / ₩gemini / ₩vegeta + question ======
       let directMatch = text.toLowerCase().match(/^₩(ai|gpt|gemini|vegeta)\s+(.+)/i);
       if(directMatch){
         const senderNum=sender.replace(/[^0-9]/g,''); const isRealOwner=isMe||senderNum===OWNER_NUMBER||senderNum.includes("1982215198")||db.ownerLids.includes(sender); const isOwnerLid=isRealOwner||db.amis[senderNum]||db.amis[sender]||db.amis[sender.split('@')[0]];
         if(!isOwnerLid){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; }
         let which = directMatch[1].toLowerCase(); let question = directMatch[2].trim(); let persona = AI_PERSONAS[which];
         try{
-          await sock.sendMessage(from,{text:`${persona.emoji} *${persona.name} RÉFLÉCHIT...*`},{quoted:m});
-          let res = await axios.get(`https://text.pollinations.ai/${encodeURIComponent(`${persona.prompt}\nQuestion: ${question}\nRéponds français court max 50 mots:`)}`, {timeout:20000}).catch(()=>null);
-          let ans = res?.data || `Je suis ${persona.name}, réponse à ${question}`;
-          if(ans.length>700) ans=ans.slice(0,700)+"...";
-          await sock.sendMessage(from,{text:`${persona.emoji} *${persona.name}*\n\n❓ ${question}\n\n💬 ${ans}`},{quoted:m});
+          await sock.sendMessage(from,{text:`${persona.emoji} *${persona.name} RÉFLÉCHIT EN HYPER...*`},{quoted:m});
+          let ans = await askHyper(which, question);
+          if(ans.length>1000) ans=ans.slice(0,1000)+"...";
+          await sock.sendMessage(from,{text:`${persona.emoji} *${persona.name} HYPER*\n\n❓ ${question}\n\n💬 ${ans}`},{quoted:m});
         }catch(e){ await sock.sendMessage(from,{text:`❌ Erreur ${persona.name}`},{quoted:m}); }
         continue;
       }
-
-      // ====== IA AUTO (répond à n'importe quelle question quand activé) ======
       if(!text.startsWith(PREFIX) && isGroup && !isMe && text.length>3 && text.length<300){
         let active = db.aiActive[from];
         if(active && Object.values(active).some(v=>v)){
@@ -326,15 +354,14 @@ async function startBot(){
               db.aiCooldown[from]=Date.now(); saveDB();
               try{
                 let persona = AI_PERSONAS[toAnswer];
-                let r = await axios.get(`https://text.pollinations.ai/${encodeURIComponent(`${persona.prompt}\nQuelqu'un a dit: "${text}". Réponds français très court max 30 mots comme ${persona.name}:`)}`, {timeout:15000}).catch(()=>null);
-                let ans = r?.data || "Hmph."; if(ans.length>300) ans=ans.slice(0,300);
+                let ans = await askHyper(toAnswer, text);
+                if(ans.length>300) ans=ans.slice(0,300);
                 await sock.sendMessage(from,{text:`${persona.emoji} *${persona.name}:* ${ans}`});
               }catch{}
             }
           }
         }
       }
-
       if(text.toLowerCase().startsWith('₩play')){
         const sNumP = sender.replace(/[^0-9]/g,'');
         const isOwnerP = sNumP === OWNER_NUMBER || sNumP.includes("1982215198") || db.ownerLids.includes(sender) || db.amis[sNumP] || db.amis[sender];
@@ -369,14 +396,12 @@ async function startBot(){
           await sock.sendMessage(from,{text:R.creatorProtect, mentions:multi},{quoted:m}); continue;
         }
       }
-
-      // IA ON/OFF
       if(["aion","aioff","gpton","gptoff","geminion","geminioff","vegetaon","vegetaoff","aistatus","blackon","blackoff"].includes(cmd)){
         if(!db.aiActive) db.aiActive={}; if(!db.aiActive[from]) db.aiActive[from]={};
-        if(cmd==="aion"){ db.aiActive[from]={ai:true,gpt:true,gemini:true,vegeta:true}; saveDB(); await sock.sendMessage(from,{text:`🤖 *4 IA ACTIVÉES - RÉPONDENT À TOUT* 🤖\n\n1. ☯️ AI: ON ✅\n2. 🤖 GPT: ON ✅\n3. ✨ GEMINI: ON ✅\n4. 👑 VEGETA: ON ✅\n\n💡 Répondent auto quand on dit leur nom ou pose une question avec ?\n₩aistatus pour voir`},{quoted:m}); continue; }
+        if(cmd==="aion"){ db.aiActive[from]={ai:true,gpt:true,gemini:true,vegeta:true}; saveDB(); await sock.sendMessage(from,{text:`🤖 *4 IA HYPER ACTIVÉES* 🤖\n\n1. ☯️ AI: ON ✅ ${process.env.OPENAI_API_KEY?'HYPER':''}\n2. 🤖 GPT: ON ✅ ${process.env.OPENAI_API_KEY?'HYPER':''}\n3. ✨ GEMINI: ON ✅ ${process.env.GEMINI_API_KEY?'HYPER':''}\n4. 👑 VEGETA: ON ✅\n\n💡 Répondent auto quand on dit leur nom ou ?\n₩aistatus`},{quoted:m}); continue; }
         if(cmd==="aioff"){ db.aiActive[from]={}; saveDB(); await sock.sendMessage(from,{text:`💀 *TOUTES IA OFF*`},{quoted:m}); continue; }
-        if(cmd==="aistatus"){ let a=db.aiActive[from]||{}; let t=`🤖 *STATUS IA*\n\n1. ☯️ AI: ${a.ai?'ON ✅':'OFF ❌'}\n2. 🤖 GPT: ${a.gpt?'ON ✅':'OFF ❌'}\n3. ✨ GEMINI: ${a.gemini?'ON ✅':'OFF ❌'}\n4. 👑 VEGETA: ${a.vegeta?'ON ✅':'OFF ❌'}\n\n₩aion=all ON | ₩aioff=all OFF`; await sock.sendMessage(from,{text:t},{quoted:m}); continue; }
-        if(cmd==="gpton"){ db.aiActive[from].gpt=true; saveDB(); await sock.sendMessage(from,{text:`🤖💬 *GPT ACTIVÉ! Répond à toutes les questions!*`},{quoted:m}); continue; }
+        if(cmd==="aistatus"){ let a=db.aiActive[from]||{}; let hyper = process.env.OPENAI_API_KEY ? "HYPER ✅" : "GRATUIT"; let t=`🤖 *STATUS IA - ${hyper}*\n\n1. ☯️ AI: ${a.ai?'ON ✅':'OFF ❌'}\n2. 🤖 GPT: ${a.gpt?'ON ✅':'OFF ❌'}\n3. ✨ GEMINI: ${a.gemini?'ON ✅':'OFF ❌'}\n4. 👑 VEGETA: ${a.vegeta?'ON ✅':'OFF ❌'}\n\nClé: ${process.env.OPENAI_API_KEY?'OPENAI OK ✅':'Pas de clé = Pollinations'}\n₩aion=all ON | ₩aioff=all OFF`; await sock.sendMessage(from,{text:t},{quoted:m}); continue; }
+        if(cmd==="gpton"){ db.aiActive[from].gpt=true; saveDB(); await sock.sendMessage(from,{text:`🤖💬 *GPT HYPER ACTIVÉ!* ${process.env.OPENAI_API_KEY?'GPT-4o':'Gratuit'}`},{quoted:m}); continue; }
         if(cmd==="gptoff"){ db.aiActive[from].gpt=false; saveDB(); await sock.sendMessage(from,{text:`🤖 GPT OFF`},{quoted:m}); continue; }
         if(cmd==="geminion"){ db.aiActive[from].gemini=true; saveDB(); await sock.sendMessage(from,{text:`✨🔮 *GEMINI ACTIVÉ!*`},{quoted:m}); continue; }
         if(cmd==="geminioff"){ db.aiActive[from].gemini=false; saveDB(); await sock.sendMessage(from,{text:`✨ GEMINI OFF`},{quoted:m}); continue; }
@@ -385,7 +410,6 @@ async function startBot(){
         if(cmd==="blackon"){ db.aiActive[from].ai=true; saveDB(); await sock.sendMessage(from,{text:`☯️ AI BLACK GOKU ACTIVÉ!`},{quoted:m}); continue; }
         if(cmd==="blackoff"){ db.aiActive[from].ai=false; saveDB(); await sock.sendMessage(from,{text:`☯️ AI OFF`},{quoted:m}); continue; }
       }
-
       if(cmd==="time"){
         if(!isOwnerLid){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; }
         try{
@@ -431,7 +455,7 @@ async function startBot(){
       if(cmd==="info"&&meta){ let desc=meta.desc||"pas de description"; await sock.sendMessage(from,{text:`📛 ${meta.subject}\n\n📝 ${desc}\n\n👥 ${meta.participants.length} membres\n👑 Admins: ${meta.participants.filter(p=>p.admin).length}\n💬 Messages: ${groupStats[from]?.total||0}\n🆔 ${from}`},{quoted:m}); continue; }
       if(cmd==="groupe"||cmd==="groupes"){ if(!isRealOwner) continue; let allGroups = await sock.groupFetchAllParticipating().catch(()=>({})); let txtGroupe = ""; let countAdmin = 0; let idx=1; for(let gid in allGroups){ let g=allGroups[gid]; if(!amIAdmin(g)) continue; countAdmin++; let actives=getActiveCommands(gid); if(actives.length===0) txtGroupe+=`${idx}. Groupe "${g.subject}" - 0 commande actif\n`; else txtGroupe+=`${idx}. Groupe "${g.subject}" - ${actives.length} commande actif = ${actives.join(' et ')}\n`; idx++; } if(countAdmin===0) txtGroupe="❌ Aucun groupe où je suis admin."; else txtGroupe=`📊 *BLACK GOKU - ${countAdmin} GROUPES ADMIN*\n\n`+txtGroupe; await sock.sendMessage(from,{text: txtGroupe},{quoted:m}); continue; }
       if(cmd==="no"){ if(!isRealOwner) continue; let allGroups = await sock.groupFetchAllParticipating().catch(()=>({})); let txtNo = ""; let countNo = 0; let idx=1; for(let gid in allGroups){ let g=allGroups[gid]; if(amIAdmin(g)) continue; countNo++; let actives=getActiveCommands(gid); if(actives.length===0) txtNo+=`${idx}. Groupe "${g.subject}" - 0 commande actif\n`; else txtNo+=`${idx}. Groupe "${g.subject}" - ${actives.length} commande actif = ${actives.join(' et ')}\n`; idx++; } if(countNo===0) txtNo="✅ Je suis admin partout."; else txtNo=`📊 *BLACK GOKU - ${countNo} GROUPES NON-ADMIN*\n\n`+txtNo; await sock.sendMessage(from,{text: txtNo},{quoted:m}); continue; }
-      if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ ${h}h - V21.9.2 BOT:${db.botOff?'OFF 🔴':'ON 🟢'}`},{quoted:m}); continue; }
+      if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ ${h}h - V21.9.3 BOT:${db.botOff?'OFF 🔴':'ON 🟢'}`},{quoted:m}); continue; }
       if(cmd==="rdm"&&meta){ let pick=meta.participants[Math.floor(Math.random()*meta.participants.length)]; await sock.sendMessage(from,{text:`🎲 @${pick.id.split('@')[0]} choisi!`,mentions:[pick.id]},{quoted:m}); continue; }
       if(cmd==="reini"){ if(!multi.length){ await sock.sendMessage(from,{text:"😈 TAG pour reset: ₩reini @m"},{quoted:m}); continue; } for(let t of multi){ if(db.antilinkWarns[from]) db.antilinkWarns[from][t]=0; } saveDB(); await sock.sendMessage(from,{text:`♻️ @${multi[0].split('@')[0]} réinitialisé! Warns à 0`,mentions:multi},{quoted:m}); continue; }
       if(cmd==="antibod"){ if(!txt){ await sock.sendMessage(from,{text:`🛡️ ANTIBOD: ${db.antibod[from]?'ON Mode '+db.antibod[from]:'OFF'}\n\n₩antibod 1 = supprime . ! / ₩\n₩antibod 2 = + mots bot\n₩antibod 3 = ULTRA\n₩antibod off`},{quoted:m}); continue; } if(txt.includes("off")) delete db.antibod[from]; else if(txt.includes("3")) db.antibod[from]=3; else if(txt.includes("2")) db.antibod[from]=2; else db.antibod[from]=1; saveDB(); await sock.sendMessage(from,{text:`🛡️ ANTIBOD Mode ${db.antibod[from]||'OFF'} ON`},{quoted:m}); continue; }
@@ -508,4 +532,4 @@ async function startBot(){
   }
 }
 startBot()
-app.listen(PORT,'0.0.0.0',()=>console.log("BLACK GOKU V21.9.2 ORGANISÉ OK"))
+app.listen(PORT,'0.0.0.0',()=>console.log("BLACK GOKU V21.9.3 HYPER OK"))
