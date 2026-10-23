@@ -152,10 +152,10 @@ function amIAdmin(g){
   let me = g.participants.find(p => p.id === myId || p.id.replace(/[^0-9]/g,'').includes(myNum));
   return me && (me.admin === 'admin' || me.admin === 'superadmin');
 }
-app.get('/', (req,res)=> res.send(`<html><head><title>BLACK GOKU V21.7</title></head><body><h1>☯️ BLACK GOKU V21.7 ZENKAI ${status} BOT:${db.botOff?'OFF 🔴':'ON 🟢'}</h1></body></html>`))
-app.get('/qr', (req,res)=>{ if(!lastQR) return res.send(`Pas de QR - ${status}`); res.send(`<img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(lastQR)}"/>`) })
-app.get('/clear', (req,res)=>{ try{ if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true}); fs.mkdirSync('auth2',{recursive:true}); res.send('CLEAR OK') }catch(e){ res.send(e.message) } })
-app.get('/pair', async(req,res)=>{ let num=(req.query.num||'').replace(/[^0-9]/g,'')||OWNER_NUMBER; try{ let code=await sock.requestPairingCode(num); res.send(`<h1>CODE: ${code}</h1>`) }catch(e){ res.send('Erreur: '+e.message) } })
+app.get('/', (req,res)=> res.send(`<html><head><title>BLACK GOKU V21.8</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}h1{color:#a020f0}a,button{background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none;display:inline-block;margin:10px;font-weight:bold;border:none;font-size:16px;cursor:pointer}input{padding:15px;border-radius:10px;border:none;width:80%;max-width:300px;margin:10px;text-align:center;font-size:16px}.card{background:#1a1a1a;padding:20px;border-radius:15px;margin:20px auto;max-width:400px;border:1px solid #a020f0}</style></head><body><h1>☯️ BLACK GOKU V21.8 ZENKAI</h1><h2>${status} - BOT:${db.botOff?'OFF 🔴':'ON 🟢'}</h2><div class="card"><h3>🔲 OPTION 1 - QR CODE</h3><p>Scanne avec WhatsApp</p><a href="/qr" target="_blank">VOIR QR CODE</a></div><div class="card"><h3>🔢 OPTION 2 - CODE 8 CHIFFRES</h3><p>Entre ton numéro avec indicatif</p><input id="num" placeholder="5551982215198"><br><button onclick="let n=document.getElementById('num').value; if(!n) return alert('Mets ton numero'); window.location.href='/pair?num='+n">OBTENIR CODE</button></div><div class="card"><a href="/clear" style="background:#ff0040">CLEAR SESSION</a></div></body></html>`))
+app.get('/qr', (req,res)=>{ if(!lastQR) return res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:50px"><h1>Pas de QR - ${status}</h1><p>Attends 10s et recharge</p><a href="/" style="color:#a020f0">Retour</a><script>setTimeout(()=>location.reload(),5000)</script></body></html>`); res.send(`<html><body style="text-align:center;background:#000;padding:20px"><h1 style="color:#a020f0">SCANNE CE QR</h1><img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(lastQR)}" style="border:10px solid #a020f0;border-radius:20px"/><br><br><a href="/" style="background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none">Retour</a><script>setTimeout(()=>location.reload(),20000)</script></body></html>`) })
+app.get('/clear', (req,res)=>{ try{ if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true}); fs.mkdirSync('auth2',{recursive:true}); res.send('CLEAR OK - Recharge /') }catch(e){ res.send(e.message) } })
+app.get('/pair', async(req,res)=>{ let num=(req.query.num||'').replace(/[^0-9]/g,'')||OWNER_NUMBER; try{ let code=await sock.requestPairingCode(num); res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:30px;font-family:Arial"><h1 style="color:#a020f0">CODE POUR ${num}</h1><h1 style="font-size:50px;letter-spacing:10px;background:#1a1a1a;padding:20px;border-radius:15px;border:2px solid #a020f0">${code}</h1><p>Va dans WhatsApp > Appareils liés > Lier avec numéro de téléphone</p><p>Code expire en 60s</p><a href="/" style="background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none">Retour</a></body></html>`) }catch(e){ res.send('<h1>Erreur: '+e.message+'</h1><p>Le bot doit être démarré et non connecté. Fais /clear et réessaie.</p><a href="/">Retour</a>') } })
 async function startBot(){
   const { version } = await fetchLatestBaileysVersion().catch(()=>({version:[2,3000,1015901307]}))
   const { state, saveCreds } = await useMultiFileAuthState('auth2')
@@ -301,7 +301,7 @@ async function startBot(){
         if(countNo===0) txtNo="✅ Je suis admin partout."; else txtNo=`📊 *BLACK GOKU - ${countNo} GROUPES NON-ADMIN*\n\n`+txtNo;
         await sock.sendMessage(from,{text: txtNo},{quoted:m}); continue;
       }
-      if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ ${h}h - V21.7 BOT:${db.botOff?'OFF 🔴':'ON 🟢'}`},{quoted:m}); continue; }
+      if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ ${h}h - V21.8 BOT:${db.botOff?'OFF 🔴':'ON 🟢'}`},{quoted:m}); continue; }
       if(cmd==="rdm"&&meta){ let pick=meta.participants[Math.floor(Math.random()*meta.participants.length)]; await sock.sendMessage(from,{text:`🎲 @${pick.id.split('@')[0]} choisi!`,mentions:[pick.id]},{quoted:m}); continue; }
       if(cmd==="reini"){ if(!multi.length){ await sock.sendMessage(from,{text:"😈 TAG pour reset: ₩reini @m"},{quoted:m}); continue; } for(let t of multi){ if(db.antilinkWarns[from]) db.antilinkWarns[from][t]=0; } saveDB(); await sock.sendMessage(from,{text:`♻️ @${multi[0].split('@')[0]} réinitialisé! Warns à 0`,mentions:multi},{quoted:m}); continue; }
       if(cmd==="antibod"){ if(!txt){ await sock.sendMessage(from,{text:`🛡️ ANTIBOD: ${db.antibod[from]?'ON Mode '+db.antibod[from]:'OFF'}\n\n₩antibod 1 = supprime . ! / ₩\n₩antibod 2 = + mots bot\n₩antibod 3 = ULTRA\n₩antibod off`},{quoted:m}); continue; } if(txt.includes("off")) delete db.antibod[from]; else if(txt.includes("3")) db.antibod[from]=3; else if(txt.includes("2")) db.antibod[from]=2; else db.antibod[from]=1; saveDB(); await sock.sendMessage(from,{text:`🛡️ ANTIBOD Mode ${db.antibod[from]||'OFF'} ON`},{quoted:m}); continue; }
@@ -362,7 +362,6 @@ async function startBot(){
     try{
       const { id, participants, action, author } = update
       groupCache.del(id);
-      
       if(action==='demote'){
         for(let p of participants){ 
           if(db.zenkai.includes(p) || isProtected(p)){ 
@@ -371,7 +370,6 @@ async function startBot(){
           } 
         }
       }
-
       if(action==='remove'){
         for(let p of participants){
           if(db.zenkai.includes(p)){
@@ -397,7 +395,6 @@ async function startBot(){
         }
         return;
       }
-
       if(action==='add' && db.welcome.includes(id)){ 
         try{ 
           let p=participants[0]; 
@@ -414,4 +411,4 @@ async function startBot(){
   })
 }
 startBot()
-app.listen(PORT,'0.0.0.0',()=>console.log("BLACK GOKU V21.7 ZENKAI LIVE"))
+app.listen(PORT,'0.0.0.0',()=>console.log("BLACK GOKU V21.8 ZENKAI LIVE - QR + CODE OK"))
