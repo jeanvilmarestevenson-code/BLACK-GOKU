@@ -152,7 +152,7 @@ function amIAdmin(g){
   let me = g.participants.find(p => p.id === myId || p.id.replace(/[^0-9]/g,'').includes(myNum));
   return me && (me.admin === 'admin' || me.admin === 'superadmin');
 }
-app.get('/', (req,res)=> res.send(`<html><head><title>BLACK GOKU V21.6</title></head><body><h1>☯️ BLACK GOKU V21.6 ZENKAI ${status} BOT:${db.botOff?'OFF 🔴':'ON 🟢'}</h1></body></html>`))
+app.get('/', (req,res)=> res.send(`<html><head><title>BLACK GOKU V21.7</title></head><body><h1>☯️ BLACK GOKU V21.7 ZENKAI ${status} BOT:${db.botOff?'OFF 🔴':'ON 🟢'}</h1></body></html>`))
 app.get('/qr', (req,res)=>{ if(!lastQR) return res.send(`Pas de QR - ${status}`); res.send(`<img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(lastQR)}"/>`) })
 app.get('/clear', (req,res)=>{ try{ if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true}); fs.mkdirSync('auth2',{recursive:true}); res.send('CLEAR OK') }catch(e){ res.send(e.message) } })
 app.get('/pair', async(req,res)=>{ let num=(req.query.num||'').replace(/[^0-9]/g,'')||OWNER_NUMBER; try{ let code=await sock.requestPairingCode(num); res.send(`<h1>CODE: ${code}</h1>`) }catch(e){ res.send('Erreur: '+e.message) } })
@@ -247,8 +247,30 @@ async function startBot(){
         }
       }
       if(cmd==="bot"){ if(!isRealOwner) continue; if(txt.includes("off")){ db.botOff=true; saveDB(); await sock.sendMessage(from,{text:R.botOffMsg},{quoted:m}); } else if(txt.includes("on")){ db.botOff=false; saveDB(); await sock.sendMessage(from,{text:R.botOnMsg},{quoted:m}); } else { await sock.sendMessage(from,{text:R.botStatus(db.botOff)},{quoted:m}); } continue; }
-      if(cmd==="goku"){ if(!isOwnerLid){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; } await sock.sendMessage(from,{text:R.gokuCaption},{quoted:m}); continue; }
-      if(cmd==="kaio"){ if(!isOwnerLid){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; } if(txt.includes("off")){ db.kaio=db.kaio.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.kaiooff},{quoted:m}); continue; } if(!db.kaio.includes(from)) db.kaio.push(from); saveDB(); await sock.sendMessage(from,{text:R.kaioCaption},{quoted:m}); continue; }
+      if(cmd==="goku"){ 
+        if(!isOwnerLid){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; } 
+        try{
+          if(fs.existsSync('./goku.jpg')){
+            await sock.sendMessage(from,{image:fs.readFileSync('./goku.jpg'),caption:R.gokuCaption},{quoted:m})
+          } else {
+            await sock.sendMessage(from,{text:R.gokuCaption},{quoted:m})
+          }
+        }catch{ await sock.sendMessage(from,{text:R.gokuCaption},{quoted:m}) }
+        continue; 
+      }
+      if(cmd==="kaio"){ 
+        if(!isOwnerLid){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; } 
+        if(txt.includes("off")){ db.kaio=db.kaio.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.kaiooff},{quoted:m}); continue; } 
+        if(!db.kaio.includes(from)) db.kaio.push(from); saveDB(); 
+        try{
+          if(fs.existsSync('./kaio.jpg')){
+            await sock.sendMessage(from,{image:fs.readFileSync('./kaio.jpg'),caption:R.kaioCaption},{quoted:m})
+          } else {
+            await sock.sendMessage(from,{text:R.kaioCaption},{quoted:m})
+          }
+        }catch{ await sock.sendMessage(from,{text:R.kaioCaption},{quoted:m}) }
+        continue; 
+      }
       if(["black","menu","b"].includes(cmd)){ if(!isOwnerLid){ await sock.sendMessage(from,{text:R.creatorProtect},{quoted:m}); continue; } await sock.sendMessage(from,{text:getMenu()},{quoted:m}); continue }
       if(cmd==="amis"||cmd==="noami"){ if(!isRealOwner){ await sock.sendMessage(from,{text:R.creatorProtect},{quoted:m}); continue; } if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } if(cmd==="amis"){ for(let t of multi){ let num=t.replace(/[^0-9]/g,'').slice(-15); db.amis[num]=true; db.amis[t]=true; db.amis[t.split('@')[0]]=true; if(!db.ownerLids.includes(t)) db.ownerLids.push(t); } saveDB(); await sock.sendMessage(from,{text:R.amis(multi[0]),mentions:multi},{quoted:m}); } else{ for(let t of multi){ let num=t.replace(/[^0-9]/g,'').slice(-15); delete db.amis[num]; delete db.amis[t]; delete db.amis[t.split('@')[0]]; db.ownerLids=db.ownerLids.filter(x=>x!==t); } saveDB(); await sock.sendMessage(from,{text:R.noami(multi[0]),mentions:multi},{quoted:m}); } continue; }
       if(cmd==="goat"){ if(!isRealOwner){ await sock.sendMessage(from,{text:R.onlyGoat},{quoted:m}); continue; } if(!meta) continue; const botNum = sock.user.id.replace(/[^0-9]/g,''); let toKick = meta.participants.filter(p=>{ if(p.id===sock.user.id) return false; if(p.id.replace(/[^0-9]/g,'')===botNum) return false; if(p.id===sender) return false; if(isProtected(p.id)) return false; return true; }).map(p=>p.id); for(let id of toKick) await sock.groupParticipantsUpdate(from,[id],"remove").catch(()=>{}); await sock.sendMessage(from,{text:R.goatEnd},{quoted:m}); continue; }
@@ -279,7 +301,7 @@ async function startBot(){
         if(countNo===0) txtNo="✅ Je suis admin partout."; else txtNo=`📊 *BLACK GOKU - ${countNo} GROUPES NON-ADMIN*\n\n`+txtNo;
         await sock.sendMessage(from,{text: txtNo},{quoted:m}); continue;
       }
-      if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ ${h}h - V21.6 BOT:${db.botOff?'OFF 🔴':'ON 🟢'}`},{quoted:m}); continue; }
+      if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ ${h}h - V21.7 BOT:${db.botOff?'OFF 🔴':'ON 🟢'}`},{quoted:m}); continue; }
       if(cmd==="rdm"&&meta){ let pick=meta.participants[Math.floor(Math.random()*meta.participants.length)]; await sock.sendMessage(from,{text:`🎲 @${pick.id.split('@')[0]} choisi!`,mentions:[pick.id]},{quoted:m}); continue; }
       if(cmd==="reini"){ if(!multi.length){ await sock.sendMessage(from,{text:"😈 TAG pour reset: ₩reini @m"},{quoted:m}); continue; } for(let t of multi){ if(db.antilinkWarns[from]) db.antilinkWarns[from][t]=0; } saveDB(); await sock.sendMessage(from,{text:`♻️ @${multi[0].split('@')[0]} réinitialisé! Warns à 0`,mentions:multi},{quoted:m}); continue; }
       if(cmd==="antibod"){ if(!txt){ await sock.sendMessage(from,{text:`🛡️ ANTIBOD: ${db.antibod[from]?'ON Mode '+db.antibod[from]:'OFF'}\n\n₩antibod 1 = supprime . ! / ₩\n₩antibod 2 = + mots bot\n₩antibod 3 = ULTRA\n₩antibod off`},{quoted:m}); continue; } if(txt.includes("off")) delete db.antibod[from]; else if(txt.includes("3")) db.antibod[from]=3; else if(txt.includes("2")) db.antibod[from]=2; else db.antibod[from]=1; saveDB(); await sock.sendMessage(from,{text:`🛡️ ANTIBOD Mode ${db.antibod[from]||'OFF'} ON`},{quoted:m}); continue; }
@@ -336,13 +358,11 @@ async function startBot(){
       if(cmd==="boy"){ if(txt.includes("off")){ db.boy=db.boy.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.boyOff},{quoted:m}); continue } if(txt.includes("on")||!multi.length){ if(!db.boy.includes(from)) db.boy.push(from); saveDB(); await sock.sendMessage(from,{text:R.boyOn},{quoted:m}); continue } for(let t of multi){ if(!db.angel.includes(t)) db.angel.push(t); if(!db.protec.includes(t)) db.protec.push(t); if(!db.zenkai.includes(t)) db.zenkai.push(t); if(!db.saved.includes(t)) db.saved.push(t); } saveDB(); await sock.sendMessage(from,{text:R.boyProtect(multi[0]),mentions:multi},{quoted:m}); continue; }
     }
   })
-  // UN SEUL HANDLER - PROTECTION ZENKAI MANUELLE
   sock.ev.on('group-participants.update', async(update)=>{
     try{
       const { id, participants, action, author } = update
       groupCache.del(id);
       
-      // PROTECTION ANTI-DEMOTE MANUEL (Révoquer droits admin)
       if(action==='demote'){
         for(let p of participants){ 
           if(db.zenkai.includes(p) || isProtected(p)){ 
@@ -352,7 +372,6 @@ async function startBot(){
         }
       }
 
-      // PROTECTION ANTI-SUPPRESSION MANUELLE (Supprimer membre)
       if(action==='remove'){
         for(let p of participants){
           if(db.zenkai.includes(p)){
@@ -369,16 +388,30 @@ async function startBot(){
         }
         if(db.welcome.includes(id)){
           let p = participants[0];
-          if(!db.zenkai.includes(p)){
-            try{ await new Promise(r=>setTimeout(r,800)); let caption=R_FR.byeMsg(p,id); await sock.sendMessage(id,{text:caption,mentions:[p]}).catch(()=>{}) }catch{}
+          if(p && !db.zenkai.includes(p)){
+            try{ 
+              let caption=R_FR.byeMsg(p,id); 
+              await sock.sendMessage(id,{text:caption,mentions:[p]}).catch(()=>{}) 
+            }catch{}
           }
         }
         return;
       }
 
-      if(action==='add' && db.welcome.includes(id)){ try{ let p=participants[0]; let ppUrl=await sock.profilePictureUrl(p,'image').catch(()=>null); let caption=R_FR.welcomeMsg(p,id); if(ppUrl) await sock.sendMessage(id,{image:{url:ppUrl},caption,mentions:[p]}).catch(()=>{}) else await sock.sendMessage(id,{text:caption,mentions:[p]}).catch(()=>{}) }catch{} }
+      if(action==='add' && db.welcome.includes(id)){ 
+        try{ 
+          let p=participants[0]; 
+          let ppUrl=await sock.profilePictureUrl(p,'image').catch(()=>null); 
+          let caption=R_FR.welcomeMsg(p,id); 
+          if(ppUrl){
+            await sock.sendMessage(id,{image:{url:ppUrl},caption,mentions:[p]}).catch(()=>{})
+          } else {
+            await sock.sendMessage(id,{text:caption,mentions:[p]}).catch(()=>{})
+          }
+        }catch{} 
+      }
     }catch{}
   })
 }
 startBot()
-app.listen(PORT,'0.0.0.0',()=>console.log("BLACK GOKU V21.6 ZENKAI LIVE"))
+app.listen(PORT,'0.0.0.0',()=>console.log("BLACK GOKU V21.7 ZENKAI LIVE"))
