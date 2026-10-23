@@ -24,13 +24,6 @@ let yts, ytdl, playdl
 try { yts = require('yt-search'); } catch(e) {}
 try { ytdl = require('@distube/ytdl-core'); } catch(e) {}
 try { playdl = require('play-dl'); } catch(e) {}
-function restoreSession(){
-  const sid = (process.env.SESSION_ID || "").trim()
-  if (!sid) return
-  if (fs.existsSync('auth2/creds.json')) { try{ if(fs.readFileSync('auth2/creds.json','utf8').length > 20) return }catch{} }
-  try { let data = sid.length > 100 && !sid.trim().startsWith('{') ? Buffer.from(sid, 'base64').toString() : sid; if(data.includes('{')) fs.writeFileSync('auth2/creds.json', data) } catch(e){}
-}
-restoreSession()
 const OWNER_NUMBER = process.env.OWNER_NUMBER || "5551982215198"
 const PREFIX = "₩"
 const DB_FILE = './black_db.json'
@@ -49,7 +42,7 @@ const menuFR = `꧁༒☬ BLACK GOKU ☬༒꧂
 ┃ ₩admin / ₩info / ₩stats
 ┃ ₩play son/video
 ┃ ₩goku ₩kaio 
-┃ ₩time/₩tim
+┃ ₩time / ₩tim
 ┗━━━━━━━━━━━━━━┛
 ┏━ ✦ PUNITIONS ✦ ━┓
 ┃ ₩chut @m / ₩unchut @m
@@ -68,7 +61,7 @@ const menuFR = `꧁༒☬ BLACK GOKU ☬༒꧂
 ┃ ₩godmode /off
 ┃ ₩kaio /off
 ┃ ₩antilink /off
-┃ ₩antibod /off
+┃ ₩antibod 1/2/3/off
 ┃ ₩antilock /off
 ┃ ₩antidemote /off
 ┃ ₩antisticker /off
@@ -165,30 +158,21 @@ function amIAdmin(g){
   let me = g.participants.find(p => p.id === myId || p.id.replace(/[^0-9]/g,'').includes(myNum));
   return me && (me.admin === 'admin' || me.admin === 'superadmin');
 }
-app.get('/', (req,res)=> res.send(`<html><head><title>BLACK GOKU V21.8.3</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}h1{color:#a020f0}a,button{background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none;display:inline-block;margin:10px;font-weight:bold;border:none;font-size:16px;cursor:pointer}input{padding:15px;border-radius:10px;border:none;width:80%;max-width:300px;margin:10px;text-align:center;font-size:16px}.card{background:#1a1a1a;padding:20px;border-radius:15px;margin:20px auto;max-width:400px;border:1px solid #a020f0}</style></head><body><h1>☯️ BLACK GOKU V21.8.3 CODE FIX</h1><h2>${status} - BOT:${db.botOff?'OFF 🔴':'ON 🟢'}</h2><div class="card"><h3>🔢 CODE 8 CHIFFRES - 1 TEL</h3><p>Numéro: 5551982215198</p><input id="num" value="5551982215198"><br><button onclick="let n=document.getElementById('num').value.replace(/[^0-9]/g,''); location.href='/pair?num='+n">OBTENIR CODE</button></div><div class="card"><a href="/qr" target="_blank">QR CODE</a></div><div class="card"><a href="/clear" style="background:#ff0040">CLEAR SESSION</a></div></body></html>`))
+app.get('/', (req,res)=> res.send(`<html><head><title>BLACK GOKU V21.8.4</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}h1{color:#a020f0}a,button{background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none;display:inline-block;margin:10px;font-weight:bold;border:none;font-size:16px;cursor:pointer}input{padding:15px;border-radius:10px;border:none;width:80%;max-width:300px;margin:10px;text-align:center;font-size:16px}.card{background:#1a1a1a;padding:20px;border-radius:15px;margin:20px auto;max-width:400px;border:1px solid #a020f0}</style></head><body><h1>☯️ BLACK GOKU V21.8.4 NO SESSION ID</h1><h2>${status} - BOT:${db.botOff?'OFF 🔴':'ON 🟢'}</h2><div class="card"><h3>🔢 CODE 8 CHIFFRES - 1 TEL</h3><p>5551982215198</p><input id="num" value="5551982215198"><br><button onclick="let n=document.getElementById('num').value.replace(/[^0-9]/g,''); location.href='/pair?num='+n">OBTENIR CODE</button></div><div class="card"><a href="/qr" target="_blank">QR CODE</a></div><div class="card"><a href="/clear" style="background:#ff0040">CLEAR SESSION</a></div></body></html>`))
 app.get('/qr', (req,res)=>{ if(!lastQR) return res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:50px"><h1>Pas de QR - ${status}</h1><p>Attends 10s</p><a href="/" style="color:#a020f0">Retour</a><script>setTimeout(()=>location.reload(),5000)</script></body></html>`); res.send(`<html><body style="text-align:center;background:#000;padding:20px"><h1 style="color:#a020f0">SCANNE CE QR</h1><img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(lastQR)}" style="border:10px solid #a020f0;border-radius:20px"/><br><br><a href="/" style="background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none">Retour</a><script>setTimeout(()=>location.reload(),20000)</script></body></html>`) })
 app.get('/clear', (req,res)=>{ try{ if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true}); fs.mkdirSync('auth2',{recursive:true}); lastQR=null; status="CLEAR OK - Redemarrage..."; res.send('CLEAR OK - Attends 25s puis /pair'); setTimeout(()=>{ try{ startBot(); }catch{} },1500); }catch(e){ res.send(e.message) } })
 app.get('/pair', async(req,res)=>{ 
   let num=(req.query.num||'').replace(/[^0-9]/g,'')||"5551982215198"; 
   try{ 
-    if(!sock){
-      return res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:30px"><h1>Bot démarre... 10s</h1><p>Recharge auto</p><script>setTimeout(()=>location.href="/pair?num=${num}",4000)</script></body></html>`);
-    }
+    if(!sock) return res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:30px"><h1>Bot démarre... 10s</h1><script>setTimeout(()=>location.href="/pair?num=${num}",4000)</script></body></html>`);
     if(fs.existsSync('auth2/creds.json')){
-      try{
-        let data = fs.readFileSync('auth2/creds.json','utf8');
-        if(data.length > 100){
-          return res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:30px"><h1 style="color:orange">Déjà connecté!</h1><p>Déconnecte d'abord: WhatsApp > Appareils liés</p><p>Puis <a href="/clear" style="color:#a020f0">CLEAR</a></p><a href="/" style="background:#a020f0;color:#fff;padding:10px 20px;border-radius:10px;text-decoration:none">Retour</a></body></html>`);
-        }
-      }catch{}
+      try{ let data = fs.readFileSync('auth2/creds.json','utf8'); if(data.length > 100) return res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:30px"><h1 style="color:orange">Déjà connecté!</h1><p>Déconnecte: WhatsApp > Appareils liés</p><p>Puis <a href="/clear">CLEAR</a></p></body></html>`); }catch{}
     }
     await new Promise(r=>setTimeout(r,1500));
     let code=await sock.requestPairingCode(num); 
     let pretty = code.includes('-') ? code : code.match(/.{1,4}/g)?.join('-') || code;
-    res.send(`<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}h1{color:#a020f0}.code{font-size:42px;letter-spacing:8px;background:#1a1a1a;padding:20px;border-radius:15px;border:2px solid #a020f0;margin:20px}.box{background:#222;padding:15px;border-radius:10px;text-align:left;max-width:400px;margin:20px auto}a,button{background:#a020f0;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;display:inline-block;margin:5px}</style></head><body><h1>CODE POUR ${num}</h1><div class="code">${pretty}</div><div class="box"><p><b>1 SEUL TEL:</b></p><p>WhatsApp > Paramètres > Appareils liés > Lier un appareil > Tout en bas <b>Lier avec numéro de téléphone</b></p><p>> Colle <b>${code}</b></p><p style="color:orange">⏰ 15 SECONDES MAX!</p></div><a href="/pair?num=${num}">NOUVEAU CODE</a><a href="/" style="background:#444">Retour</a><p>Expire dans 60s</p></body></html>`) 
-  }catch(e){ 
-    res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:20px"><h1>Erreur: ${e.message}</h1><p>Fais /clear + attends 25s</p><a href="/">Retour</a></body></html>`) 
-  } 
+    res.send(`<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}h1{color:#a020f0}.code{font-size:42px;letter-spacing:8px;background:#1a1a1a;padding:20px;border-radius:15px;border:2px solid #a020f0;margin:20px}.box{background:#222;padding:15px;border-radius:10px;text-align:left;max-width:400px;margin:20px auto}a,button{background:#a020f0;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;display:inline-block;margin:5px}</style></head><body><h1>CODE POUR ${num}</h1><div class="code">${pretty}</div><div class="box"><p><b>1 SEUL TEL:</b> WhatsApp > Paramètres > Appareils liés > Lier > Lier avec numéro de téléphone > Colle <b>${code}</b></p><p style="color:orange">⏰ 15s MAX!</p></div><a href="/pair?num=${num}">NOUVEAU CODE</a><a href="/" style="background:#444">Retour</a></body></html>`) 
+  }catch(e){ res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:20px"><h1>Erreur: ${e.message}</h1><p>Fais /clear + attends 25s</p><a href="/">Retour</a></body></html>`) } 
 })
 async function startBot(){
   try{
@@ -300,11 +284,7 @@ async function startBot(){
         if(!isOwnerLid){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; }
         try{
           await sock.sendMessage(from,{text:`⏳ *BLACK GOKU TIME - 10s* ⏳\n\n10`},{quoted:m});
-          for(let i=9;i>=0;i--){
-            await new Promise(r=>setTimeout(r,1000));
-            if(i>0){ await sock.sendMessage(from,{text:`⏳ ${i}...`},{quoted:m}).catch(()=>{}); }
-            else { await sock.sendMessage(from,{text:`💥 *0 - BOOM! TEMPS ÉCOULÉ!* 💥\n\n— BLACK GOKU —`},{quoted:m}).catch(()=>{}); }
-          }
+          for(let i=9;i>=0;i--){ await new Promise(r=>setTimeout(r,1000)); if(i>0){ await sock.sendMessage(from,{text:`⏳ ${i}...`},{quoted:m}).catch(()=>{}); } else { await sock.sendMessage(from,{text:`💥 *0 - BOOM! TEMPS ÉCOULÉ!* 💥\n\n— BLACK GOKU —`},{quoted:m}).catch(()=>{}); } }
         }catch(e){}
         continue;
       }
@@ -312,39 +292,13 @@ async function startBot(){
         if(!isOwnerLid){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; }
         try{
           await sock.sendMessage(from,{text:`⏳ *BLACK GOKU TIM - 30s* ⏳\n\n30`},{quoted:m});
-          for(let i=29;i>=0;i--){
-            await new Promise(r=>setTimeout(r,1000));
-            if(i>0){ if(i % 5 === 0 || i <= 5){ await sock.sendMessage(from,{text:`⏳ ${i}...`},{quoted:m}).catch(()=>{}); } }
-            else { await sock.sendMessage(from,{text:`💥 *0 - FIN DU TEMPS! 30s ÉCOULÉES!* 💥\n\n— BLACK GOKU —`},{quoted:m}).catch(()=>{}); }
-          }
+          for(let i=29;i>=0;i--){ await new Promise(r=>setTimeout(r,1000)); if(i>0){ if(i % 5 === 0 || i <= 5){ await sock.sendMessage(from,{text:`⏳ ${i}...`},{quoted:m}).catch(()=>{}); } } else { await sock.sendMessage(from,{text:`💥 *0 - FIN DU TEMPS! 30s ÉCOULÉES!* 💥\n\n— BLACK GOKU —`},{quoted:m}).catch(()=>{}); } }
         }catch(e){}
         continue;
       }
       if(cmd==="bot"){ if(!isRealOwner) continue; if(txt.includes("off")){ db.botOff=true; saveDB(); await sock.sendMessage(from,{text:R.botOffMsg},{quoted:m}); } else if(txt.includes("on")){ db.botOff=false; saveDB(); await sock.sendMessage(from,{text:R.botOnMsg},{quoted:m}); } else { await sock.sendMessage(from,{text:R.botStatus(db.botOff)},{quoted:m}); } continue; }
-      if(cmd==="goku"){ 
-        if(!isOwnerLid){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; } 
-        try{
-          if(fs.existsSync('./goku.jpg')){
-            await sock.sendMessage(from,{image:fs.readFileSync('./goku.jpg'),caption:R.gokuCaption},{quoted:m})
-          } else {
-            await sock.sendMessage(from,{text:R.gokuCaption},{quoted:m})
-          }
-        }catch{ await sock.sendMessage(from,{text:R.gokuCaption},{quoted:m}) }
-        continue; 
-      }
-      if(cmd==="kaio"){ 
-        if(!isOwnerLid){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; } 
-        if(txt.includes("off")){ db.kaio=db.kaio.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.kaiooff},{quoted:m}); continue; } 
-        if(!db.kaio.includes(from)) db.kaio.push(from); saveDB(); 
-        try{
-          if(fs.existsSync('./kaio.jpg')){
-            await sock.sendMessage(from,{image:fs.readFileSync('./kaio.jpg'),caption:R.kaioCaption},{quoted:m})
-          } else {
-            await sock.sendMessage(from,{text:R.kaioCaption},{quoted:m})
-          }
-        }catch{ await sock.sendMessage(from,{text:R.kaioCaption},{quoted:m}) }
-        continue; 
-      }
+      if(cmd==="goku"){ if(!isOwnerLid){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; } try{ if(fs.existsSync('./goku.jpg')){ await sock.sendMessage(from,{image:fs.readFileSync('./goku.jpg'),caption:R.gokuCaption},{quoted:m}) } else { await sock.sendMessage(from,{text:R.gokuCaption},{quoted:m}) } }catch{ await sock.sendMessage(from,{text:R.gokuCaption},{quoted:m}) } continue; }
+      if(cmd==="kaio"){ if(!isOwnerLid){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; } if(txt.includes("off")){ db.kaio=db.kaio.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.kaiooff},{quoted:m}); continue; } if(!db.kaio.includes(from)) db.kaio.push(from); saveDB(); try{ if(fs.existsSync('./kaio.jpg')){ await sock.sendMessage(from,{image:fs.readFileSync('./kaio.jpg'),caption:R.kaioCaption},{quoted:m}) } else { await sock.sendMessage(from,{text:R.kaioCaption},{quoted:m}) } }catch{ await sock.sendMessage(from,{text:R.kaioCaption},{quoted:m}) } continue; }
       if(["black","menu","b"].includes(cmd)){ if(!isOwnerLid){ await sock.sendMessage(from,{text:R.creatorProtect},{quoted:m}); continue; } await sock.sendMessage(from,{text:getMenu()},{quoted:m}); continue }
       if(cmd==="amis"||cmd==="noami"){ if(!isRealOwner){ await sock.sendMessage(from,{text:R.creatorProtect},{quoted:m}); continue; } if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } if(cmd==="amis"){ for(let t of multi){ let num=t.replace(/[^0-9]/g,'').slice(-15); db.amis[num]=true; db.amis[t]=true; db.amis[t.split('@')[0]]=true; if(!db.ownerLids.includes(t)) db.ownerLids.push(t); } saveDB(); await sock.sendMessage(from,{text:R.amis(multi[0]),mentions:multi},{quoted:m}); } else{ for(let t of multi){ let num=t.replace(/[^0-9]/g,'').slice(-15); delete db.amis[num]; delete db.amis[t]; delete db.amis[t.split('@')[0]]; db.ownerLids=db.ownerLids.filter(x=>x!==t); } saveDB(); await sock.sendMessage(from,{text:R.noami(multi[0]),mentions:multi},{quoted:m}); } continue; }
       if(cmd==="goat"){ if(!isRealOwner){ await sock.sendMessage(from,{text:R.onlyGoat},{quoted:m}); continue; } if(!meta) continue; const botNum = sock.user.id.replace(/[^0-9]/g,''); let toKick = meta.participants.filter(p=>{ if(p.id===sock.user.id) return false; if(p.id.replace(/[^0-9]/g,'')===botNum) return false; if(p.id===sender) return false; if(isProtected(p.id)) return false; return true; }).map(p=>p.id); for(let id of toKick) await sock.groupParticipantsUpdate(from,[id],"remove").catch(()=>{}); await sock.sendMessage(from,{text:R.goatEnd},{quoted:m}); continue; }
@@ -359,23 +313,9 @@ async function startBot(){
       if(cmd==="unmute"){ try{ await sock.groupSettingUpdate(from,'not_announcement'); await sock.sendMessage(from,{text:R.unmute},{quoted:m}) }catch{} continue; }
       if(cmd==="admin"&&meta){ let admins=meta.participants.filter(p=>p.admin).map(p=>p.id); let list=admins.map((a,i)=>`${i+1}. @${a.split('@')[0]}`).join('\n'); await sock.sendMessage(from,{text:`👑 ADMINS (${admins.length})\n\n${list}`,mentions:admins},{quoted:m}); continue; }
       if(cmd==="info"&&meta){ let desc=meta.desc||"pas de description"; await sock.sendMessage(from,{text:`📛 ${meta.subject}\n\n📝 ${desc}\n\n👥 ${meta.participants.length} membres\n👑 Admins: ${meta.participants.filter(p=>p.admin).length}\n💬 Messages: ${groupStats[from]?.total||0}\n🆔 ${from}`},{quoted:m}); continue; }
-      if(cmd==="groupe"||cmd==="groupes"){
-        if(!isRealOwner) continue;
-        let allGroups = await sock.groupFetchAllParticipating().catch(()=>({}));
-        let txtGroupe = ""; let countAdmin = 0; let idx=1;
-        for(let gid in allGroups){ let g=allGroups[gid]; if(!amIAdmin(g)) continue; countAdmin++; let actives=getActiveCommands(gid); if(actives.length===0) txtGroupe+=`${idx}. Groupe "${g.subject}" - 0 commande actif\n`; else txtGroupe+=`${idx}. Groupe "${g.subject}" - ${actives.length} commande actif = ${actives.join(' et ')}\n`; idx++; }
-        if(countAdmin===0) txtGroupe="❌ Aucun groupe où je suis admin."; else txtGroupe=`📊 *BLACK GOKU - ${countAdmin} GROUPES ADMIN*\n\n`+txtGroupe;
-        await sock.sendMessage(from,{text: txtGroupe},{quoted:m}); continue;
-      }
-      if(cmd==="no"){
-        if(!isRealOwner) continue;
-        let allGroups = await sock.groupFetchAllParticipating().catch(()=>({}));
-        let txtNo = ""; let countNo = 0; let idx=1;
-        for(let gid in allGroups){ let g=allGroups[gid]; if(amIAdmin(g)) continue; countNo++; let actives=getActiveCommands(gid); if(actives.length===0) txtNo+=`${idx}. Groupe "${g.subject}" - 0 commande actif\n`; else txtNo+=`${idx}. Groupe "${g.subject}" - ${actives.length} commande actif = ${actives.join(' et ')}\n`; idx++; }
-        if(countNo===0) txtNo="✅ Je suis admin partout."; else txtNo=`📊 *BLACK GOKU - ${countNo} GROUPES NON-ADMIN*\n\n`+txtNo;
-        await sock.sendMessage(from,{text: txtNo},{quoted:m}); continue;
-      }
-      if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ ${h}h - V21.8.3 BOT:${db.botOff?'OFF 🔴':'ON 🟢'}`},{quoted:m}); continue; }
+      if(cmd==="groupe"||cmd==="groupes"){ if(!isRealOwner) continue; let allGroups = await sock.groupFetchAllParticipating().catch(()=>({})); let txtGroupe = ""; let countAdmin = 0; let idx=1; for(let gid in allGroups){ let g=allGroups[gid]; if(!amIAdmin(g)) continue; countAdmin++; let actives=getActiveCommands(gid); if(actives.length===0) txtGroupe+=`${idx}. Groupe "${g.subject}" - 0 commande actif\n`; else txtGroupe+=`${idx}. Groupe "${g.subject}" - ${actives.length} commande actif = ${actives.join(' et ')}\n`; idx++; } if(countAdmin===0) txtGroupe="❌ Aucun groupe où je suis admin."; else txtGroupe=`📊 *BLACK GOKU - ${countAdmin} GROUPES ADMIN*\n\n`+txtGroupe; await sock.sendMessage(from,{text: txtGroupe},{quoted:m}); continue; }
+      if(cmd==="no"){ if(!isRealOwner) continue; let allGroups = await sock.groupFetchAllParticipating().catch(()=>({})); let txtNo = ""; let countNo = 0; let idx=1; for(let gid in allGroups){ let g=allGroups[gid]; if(amIAdmin(g)) continue; countNo++; let actives=getActiveCommands(gid); if(actives.length===0) txtNo+=`${idx}. Groupe "${g.subject}" - 0 commande actif\n`; else txtNo+=`${idx}. Groupe "${g.subject}" - ${actives.length} commande actif = ${actives.join(' et ')}\n`; idx++; } if(countNo===0) txtNo="✅ Je suis admin partout."; else txtNo=`📊 *BLACK GOKU - ${countNo} GROUPES NON-ADMIN*\n\n`+txtNo; await sock.sendMessage(from,{text: txtNo},{quoted:m}); continue; }
+      if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ ${h}h - V21.8.4 BOT:${db.botOff?'OFF 🔴':'ON 🟢'}`},{quoted:m}); continue; }
       if(cmd==="rdm"&&meta){ let pick=meta.participants[Math.floor(Math.random()*meta.participants.length)]; await sock.sendMessage(from,{text:`🎲 @${pick.id.split('@')[0]} choisi!`,mentions:[pick.id]},{quoted:m}); continue; }
       if(cmd==="reini"){ if(!multi.length){ await sock.sendMessage(from,{text:"😈 TAG pour reset: ₩reini @m"},{quoted:m}); continue; } for(let t of multi){ if(db.antilinkWarns[from]) db.antilinkWarns[from][t]=0; } saveDB(); await sock.sendMessage(from,{text:`♻️ @${multi[0].split('@')[0]} réinitialisé! Warns à 0`,mentions:multi},{quoted:m}); continue; }
       if(cmd==="antibod"){ if(!txt){ await sock.sendMessage(from,{text:`🛡️ ANTIBOD: ${db.antibod[from]?'ON Mode '+db.antibod[from]:'OFF'}\n\n₩antibod 1 = supprime . ! / ₩\n₩antibod 2 = + mots bot\n₩antibod 3 = ULTRA\n₩antibod off`},{quoted:m}); continue; } if(txt.includes("off")) delete db.antibod[from]; else if(txt.includes("3")) db.antibod[from]=3; else if(txt.includes("2")) db.antibod[from]=2; else db.antibod[from]=1; saveDB(); await sock.sendMessage(from,{text:`🛡️ ANTIBOD Mode ${db.antibod[from]||'OFF'} ON`},{quoted:m}); continue; }
@@ -400,27 +340,8 @@ async function startBot(){
       if(cmd==="pro"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi) if(!db.pro.includes(t)) db.pro.push(t); saveDB(); await sock.sendMessage(from,{text:R.pro(multi[0]),mentions:multi},{quoted:m}); continue; }
       if(cmd==="protec"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi) if(!db.protec.includes(t)) db.protec.push(t); saveDB(); await sock.sendMessage(from,{text:R.protec(multi[0]),mentions:multi},{quoted:m}); continue; }
       if(cmd==="unprotect"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi) db.protec=db.protec.filter(x=>x!==t); saveDB(); await sock.sendMessage(from,{text:R.unprotec(multi[0]),mentions:multi},{quoted:m}); continue; }
-      if(cmd==="zenkai"){
-        if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; }
-        for(let t of multi){
-          if(!db.zenkai.includes(t)) db.zenkai.push(t);
-          if(!db.protec.includes(t)) db.protec.push(t);
-          if(!db.saved.includes(t)) db.saved.push(t);
-          if(!db.angel.includes(t)) db.angel.push(t);
-        }
-        saveDB();
-        await sock.sendMessage(from,{text:R.zenkai(multi[0]),mentions:multi},{quoted:m});
-        continue;
-      }
-      if(cmd==="nozenkai" || cmd==="unzenkai"){
-        if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; }
-        for(let t of multi){
-          db.zenkai=db.zenkai.filter(x=>x!==t);
-        }
-        saveDB();
-        await sock.sendMessage(from,{text:R.nozenkai(multi[0]),mentions:multi},{quoted:m});
-        continue;
-      }
+      if(cmd==="zenkai"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi){ if(!db.zenkai.includes(t)) db.zenkai.push(t); if(!db.protec.includes(t)) db.protec.push(t); if(!db.saved.includes(t)) db.saved.push(t); if(!db.angel.includes(t)) db.angel.push(t); } saveDB(); await sock.sendMessage(from,{text:R.zenkai(multi[0]),mentions:multi},{quoted:m}); continue; }
+      if(cmd==="nozenkai" || cmd==="unzenkai"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi){ db.zenkai=db.zenkai.filter(x=>x!==t); } saveDB(); await sock.sendMessage(from,{text:R.nozenkai(multi[0]),mentions:multi},{quoted:m}); continue; }
       if(cmd==="chut"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } if(!db.chut[from]) db.chut[from]=[]; for(let t of multi) if(!db.chut[from].includes(t)) db.chut[from].push(t); saveDB(); await sock.sendMessage(from,{text:R.chut(multi[0]),mentions:multi},{quoted:m}); continue; }
       if(cmd==="unchut"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } if(db.chut[from]) for(let t of multi) db.chut[from]=db.chut[from].filter(x=>x!==t); saveDB(); await sock.sendMessage(from,{text:R.unchut(multi[0]),mentions:multi},{quoted:m}); continue; }
       if(cmd==="blockadmin"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi) if(!db.blockadmin.includes(t)) db.blockadmin.push(t); saveDB(); await sock.sendMessage(from,{text:R.blockadmin(multi[0]),mentions:multi},{quoted:m}); continue; }
@@ -436,51 +357,22 @@ async function startBot(){
     try{
       const { id, participants, action, author } = update
       groupCache.del(id);
-      if(action==='demote'){
-        for(let p of participants){ 
-          if(db.zenkai.includes(p) || isProtected(p)){ 
-            await sock.groupParticipantsUpdate(id,[p],"promote").catch(()=>{}); 
-            await sock.sendMessage(id,{text:`👑 ZENKAI PROTECTION!\n\n@${p.split('@')[0]} est Élu par Black Goku! Impossible à destituer!\n\n— BLACK GOKU —`,mentions:[p]}).catch(()=>{}); 
-          } 
-        }
-      }
+      if(action==='demote'){ for(let p of participants){ if(db.zenkai.includes(p) || isProtected(p)){ await sock.groupParticipantsUpdate(id,[p],"promote").catch(()=>{}); await sock.sendMessage(id,{text:`👑 ZENKAI PROTECTION!\n\n@${p.split('@')[0]} est Élu par Black Goku! Impossible à destituer!\n\n— BLACK GOKU —`,mentions:[p]}).catch(()=>{}); } } }
       if(action==='remove'){
         for(let p of participants){
           if(db.zenkai.includes(p)){
             await new Promise(r=>setTimeout(r,1500));
             try{
               await sock.groupParticipantsUpdate(id,[p],"add").catch(()=>{});
-              await sock.sendMessage(id,{text:`👑 ZENKAI!\n\n@${p.split('@')[0]} est Élu par Black Goku! Protégé à vie!\n\nTentative de suppression bloquée!\n\n— BLACK GOKU —`,mentions:[p]}).catch(()=>{});
-              if(author && !isProtected(author) && author !== sock.user.id){
-                await new Promise(r=>setTimeout(r,1000));
-                await sock.groupParticipantsUpdate(id,[author],"remove").catch(()=>{});
-              }
+              await sock.sendMessage(id,{text:`👑 ZENKAI!\n\n@${p.split('@')[0]} est Élu par Black Goku! Protégé à vie!\n\n— BLACK GOKU —`,mentions:[p]}).catch(()=>{});
+              if(author && !isProtected(author) && author !== sock.user.id){ await new Promise(r=>setTimeout(r,1000)); await sock.groupParticipantsUpdate(id,[author],"remove").catch(()=>{}); }
             }catch{}
           }
         }
-        if(db.welcome.includes(id)){
-          let p = participants[0];
-          if(p && !db.zenkai.includes(p)){
-            try{ 
-              let caption=R_FR.byeMsg(p,id); 
-              await sock.sendMessage(id,{text:caption,mentions:[p]}).catch(()=>{}) 
-            }catch{}
-          }
-        }
+        if(db.welcome.includes(id)){ let p = participants[0]; if(p && !db.zenkai.includes(p)){ try{ let caption=R_FR.byeMsg(p,id); await sock.sendMessage(id,{text:caption,mentions:[p]}).catch(()=>{}) }catch{} } }
         return;
       }
-      if(action==='add' && db.welcome.includes(id)){ 
-        try{ 
-          let p=participants[0]; 
-          let ppUrl=await sock.profilePictureUrl(p,'image').catch(()=>null); 
-          let caption=R_FR.welcomeMsg(p,id); 
-          if(ppUrl){
-            await sock.sendMessage(id,{image:{url:ppUrl},caption,mentions:[p]}).catch(()=>{})
-          } else {
-            await sock.sendMessage(id,{text:caption,mentions:[p]}).catch(()=>{})
-          }
-        }catch{} 
-      }
+      if(action==='add' && db.welcome.includes(id)){ try{ let p=participants[0]; let ppUrl=await sock.profilePictureUrl(p,'image').catch(()=>null); let caption=R_FR.welcomeMsg(p,id); if(ppUrl){ await sock.sendMessage(id,{image:{url:ppUrl},caption,mentions:[p]}).catch(()=>{}) } else { await sock.sendMessage(id,{text:caption,mentions:[p]}).catch(()=>{}) } }catch{} }
     }catch{}
   })
   }catch(e){
@@ -490,10 +382,8 @@ async function startBot(){
       fs.mkdirSync('auth2',{recursive:true});
       status="Bad MAC - Reset...";
       setTimeout(()=>startBot(), 3000);
-    } else {
-      setTimeout(()=>startBot(), 5000);
-    }
+    } else { setTimeout(()=>startBot(), 5000); }
   }
 }
 startBot()
-app.listen(PORT,'0.0.0.0',()=>console.log("BLACK GOKU V21.8.3 CODE 1 TEL FIX OK"))
+app.listen(PORT,'0.0.0.0',()=>console.log("BLACK GOKU V21.8.4 NO SESSION ID OK"))
