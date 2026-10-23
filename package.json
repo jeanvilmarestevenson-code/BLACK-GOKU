@@ -1,7 +1,7 @@
 {
   "name": "black-goku-h24",
-  "version": "20.6.0",
-  "description": "BLACK GOKU H24 - V20.6 - GOKU KAIO IMAGES + PLAY + BOY OWNER ONLY + ANTILINK 4 WARNS",
+  "version": "21.6.0",
+  "description": "BLACK GOKU H24 V21.6 ZENKAI - ANTI KICK MANUEL + ANTI DEMOTE + ZENKAI IMMORTEL + PLAY + BOY OWNER ONLY + ANTILINK 4 WARNS + ANTISTATUS",
   "main": "web.js",
   "scripts": {
     "start": "node web.js"
