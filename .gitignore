@@ -7,16 +7,15 @@ qrcode.png
 *.bak
 npm-debug.log*
 
-# NE JAMAIS PUSH SESSION
+# NE JAMAIS PUSH SESSION - TRÈS IMPORTANT
 auth2/
 auth_info/
-black_db.json
 creds.json
 baileys_store.json
 *.session
 **/auth2/
 
-# Images sauf les 4
+# Images sauf les 4 du bot
 *.jpg
 *.png
 *.jpeg
