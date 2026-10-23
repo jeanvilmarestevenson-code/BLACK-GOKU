@@ -85,7 +85,7 @@ const menuFR = `꧁༒☬ BLACK GOKU V21.9.6 CLEAN ☬༒꧂
   *BLACK GOKU CLEAN FINAL*`
 const R_FR = {
   noPerm:"💀 *TOUCHE PAS À CE QUI N'EST PAS À TOI, FAIBLE.*\n\n *SEUL BLACK GOKU COMMANDE ICI.*",
-  creatorProtect:"☯️👑 *TU OSES T'ATTAQUER À MOI? JE SUIS BLACK GOKU!*",
+  creatorProtect:"☯️👑 *TOUCHE PAS À CE QUI N'EST PAS À TOI, FAIBLE.*\n\n *SEUL BLACK GOKU COMMANDE ICI TOI TU OBEIS C'EST TOUT MISÉRABLE.",
   onlyGoat:"👑💀 SEUL BLACK GOKU PEUT UTILISER ₩goat!",
   needTag:"😈 TAG UN MORTEL! @m",
   ban:(j)=>`💀 HAKAI! @${j.split('@')[0]} effacé.`, kick:(j)=>`💀 @${j.split('@')[0]} expulsé.`,
