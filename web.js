@@ -101,7 +101,7 @@ const menuFR = `꧁༒☬ BLACK GOKU ☬༒꧂
   *BLACK GOKU*`
 const R_FR = {
   noPerm:"💀 *TOUCHE PAS À CE QUI N'EST PAS À TOI, FAIBLE.*\n\n *SEUL BLACK GOKU COMMANDE ICI. TOI, TU OBEIS. C'EST TOUT😈.*",
-  creatorProtect:"☯️👑 *TU OSES T'ATTAQUER À MOI?*\n\n💀 *JE SUIS BLACK GOKU, LE CRÉATEUR DE CE MONDE.*\n\n😈 *TU N'ES QU'UN INSECTE QUI ESSAIE DE PIQUER UN DIEU.*\n\n🔥 *TA TENTATIVE EST PATHÉTIQUE. GENOUX À TERRE, MORTEL.*\n\n— BLACK GOKU —",
+  creatorProtect:"☯️👑 *TU OSES T'ATTAQUER À MOI?*\n\n💀 *JE SUIS BLACK GOKU, LE CRÉATEUR DE CE MONDE.*\n\nTu n'es qu'un insecte devant moi miserable.*\n\n🔥 *TA TENTATIVE EST PATHÉTIQUE. GENOUX À TERRE, MORTEL.*\n\n— BLACK GOKU —",
   onlyGoat:"👑💀 SEUL BLACK GOKU PEUT UTILISER ₩goat - HAKAI INTERDIT AUX MORTELS!",
   needTag:"😈 TAG UN MORTEL! @m",
   ban:(j)=>`💀 HAKAI! @${j.split('@')[0]} effacé.`, kick:(j)=>`💀 @${j.split('@')[0]} expulsé.`,
