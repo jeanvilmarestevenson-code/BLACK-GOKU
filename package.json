@@ -1,7 +1,7 @@
 {
   "name": "black-goku-h24",
-  "version": "21.8.3",
-  "description": "BLACK GOKU H24 V21.8.3 - CODE 1 TEL FIX + NO BAD MAC + TIME 10s + TIM 30s + ZENKAI IMMORTEL + ANTI KICK AUTO + ANTI DEMOTE",
+  "version": "21.8.4",
+  "description": "BLACK GOKU H24 V21.8.4 - NO SESSION ID - CODE 8 CHIFFRES 1 TEL ONLY + NO BAD MAC + TIME TIM + ZENKAI IMMORTEL",
   "main": "web.js",
   "scripts": {
     "start": "node web.js"
