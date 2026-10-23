@@ -1,7 +1,7 @@
 process.on('uncaughtException', (e) => { 
   const msg = (e.message || "").toString();
   if (msg.includes('Bad MAC') || msg.includes('Invalid MAC') || msg.includes('Session error') || msg.includes('auth') || msg.includes('MAC')) {
-    console.log("Bad MAC ignoré - auto");
+    console.log("Bad MAC ignoré");
     return; 
   }
 })
@@ -49,7 +49,7 @@ const menuFR = `꧁༒☬ BLACK GOKU ☬༒꧂
 ┃ ₩admin / ₩info / ₩stats
 ┃ ₩play son/video
 ┃ ₩goku ₩kaio 
-┃ ₩time /₩tim
+┃ ₩time/₩tim
 ┗━━━━━━━━━━━━━━┛
 ┏━ ✦ PUNITIONS ✦ ━┓
 ┃ ₩chut @m / ₩unchut @m
@@ -165,10 +165,31 @@ function amIAdmin(g){
   let me = g.participants.find(p => p.id === myId || p.id.replace(/[^0-9]/g,'').includes(myNum));
   return me && (me.admin === 'admin' || me.admin === 'superadmin');
 }
-app.get('/', (req,res)=> res.send(`<html><head><title>BLACK GOKU V21.8.2</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}h1{color:#a020f0}a,button{background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none;display:inline-block;margin:10px;font-weight:bold;border:none;font-size:16px;cursor:pointer}input{padding:15px;border-radius:10px;border:none;width:80%;max-width:300px;margin:10px;text-align:center;font-size:16px}.card{background:#1a1a1a;padding:20px;border-radius:15px;margin:20px auto;max-width:400px;border:1px solid #a020f0}</style></head><body><h1>☯️ BLACK GOKU V21.8.2 NO BAD MAC</h1><h2>${status} - BOT:${db.botOff?'OFF 🔴':'ON 🟢'}</h2><div class="card"><h3>🔲 OPTION 1 - QR CODE</h3><p>Scanne avec WhatsApp</p><a href="/qr" target="_blank">VOIR QR CODE</a></div><div class="card"><h3>🔢 OPTION 2 - CODE 8 CHIFFRES</h3><p>Numéro: 5551982215198</p><input id="num" placeholder="5551982215198" value="5551982215198"><br><button onclick="let el=document.getElementById('num'); let n=(el.value||'').replace(/[^0-9]/g,''); if(n.length<10){ alert('Mets ton numero'); el.focus(); return; } window.location.href='/pair?num='+n">OBTENIR CODE</button></div><div class="card"><a href="/clear" style="background:#ff0040">CLEAR SESSION</a></div></body></html>`))
-app.get('/qr', (req,res)=>{ if(!lastQR) return res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:50px"><h1>Pas de QR - ${status}</h1><p>Attends 10s et recharge</p><a href="/" style="color:#a020f0">Retour</a><script>setTimeout(()=>location.reload(),5000)</script></body></html>`); res.send(`<html><body style="text-align:center;background:#000;padding:20px"><h1 style="color:#a020f0">SCANNE CE QR</h1><img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(lastQR)}" style="border:10px solid #a020f0;border-radius:20px"/><br><br><a href="/" style="background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none">Retour</a><script>setTimeout(()=>location.reload(),20000)</script></body></html>`) })
-app.get('/clear', (req,res)=>{ try{ if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true}); fs.mkdirSync('auth2',{recursive:true}); lastQR=null; status="CLEAR OK - Redemarrage..."; res.send('CLEAR OK - Attends 20s'); setTimeout(()=>{ try{ startBot(); }catch{} },1500); }catch(e){ res.send(e.message) } })
-app.get('/pair', async(req,res)=>{ let num=(req.query.num||'').replace(/[^0-9]/g,'')||OWNER_NUMBER; try{ if(!sock) return res.send('<h1>Bot pas pret</h1><script>setTimeout(()=>location.reload(),5000)</script>'); let code=await sock.requestPairingCode(num); res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:30px;font-family:Arial"><h1 style="color:#a020f0">CODE POUR ${num}</h1><h1 style="font-size:50px;letter-spacing:10px;background:#1a1a1a;padding:20px;border-radius:15px;border:2px solid #a020f0">${code}</h1><p>WhatsApp > Appareils liés > Lier avec numéro</p><p style="color:orange">TAPE EN 15 SECONDES!</p><a href="/" style="background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none">Retour</a></body></html>`) }catch(e){ res.send('<h1>Erreur: '+e.message+'</h1><p>Fais /clear puis reessaie</p><a href="/">Retour</a>') } })
+app.get('/', (req,res)=> res.send(`<html><head><title>BLACK GOKU V21.8.3</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}h1{color:#a020f0}a,button{background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none;display:inline-block;margin:10px;font-weight:bold;border:none;font-size:16px;cursor:pointer}input{padding:15px;border-radius:10px;border:none;width:80%;max-width:300px;margin:10px;text-align:center;font-size:16px}.card{background:#1a1a1a;padding:20px;border-radius:15px;margin:20px auto;max-width:400px;border:1px solid #a020f0}</style></head><body><h1>☯️ BLACK GOKU V21.8.3 CODE FIX</h1><h2>${status} - BOT:${db.botOff?'OFF 🔴':'ON 🟢'}</h2><div class="card"><h3>🔢 CODE 8 CHIFFRES - 1 TEL</h3><p>Numéro: 5551982215198</p><input id="num" value="5551982215198"><br><button onclick="let n=document.getElementById('num').value.replace(/[^0-9]/g,''); location.href='/pair?num='+n">OBTENIR CODE</button></div><div class="card"><a href="/qr" target="_blank">QR CODE</a></div><div class="card"><a href="/clear" style="background:#ff0040">CLEAR SESSION</a></div></body></html>`))
+app.get('/qr', (req,res)=>{ if(!lastQR) return res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:50px"><h1>Pas de QR - ${status}</h1><p>Attends 10s</p><a href="/" style="color:#a020f0">Retour</a><script>setTimeout(()=>location.reload(),5000)</script></body></html>`); res.send(`<html><body style="text-align:center;background:#000;padding:20px"><h1 style="color:#a020f0">SCANNE CE QR</h1><img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(lastQR)}" style="border:10px solid #a020f0;border-radius:20px"/><br><br><a href="/" style="background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none">Retour</a><script>setTimeout(()=>location.reload(),20000)</script></body></html>`) })
+app.get('/clear', (req,res)=>{ try{ if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true}); fs.mkdirSync('auth2',{recursive:true}); lastQR=null; status="CLEAR OK - Redemarrage..."; res.send('CLEAR OK - Attends 25s puis /pair'); setTimeout(()=>{ try{ startBot(); }catch{} },1500); }catch(e){ res.send(e.message) } })
+app.get('/pair', async(req,res)=>{ 
+  let num=(req.query.num||'').replace(/[^0-9]/g,'')||"5551982215198"; 
+  try{ 
+    if(!sock){
+      return res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:30px"><h1>Bot démarre... 10s</h1><p>Recharge auto</p><script>setTimeout(()=>location.href="/pair?num=${num}",4000)</script></body></html>`);
+    }
+    if(fs.existsSync('auth2/creds.json')){
+      try{
+        let data = fs.readFileSync('auth2/creds.json','utf8');
+        if(data.length > 100){
+          return res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:30px"><h1 style="color:orange">Déjà connecté!</h1><p>Déconnecte d'abord: WhatsApp > Appareils liés</p><p>Puis <a href="/clear" style="color:#a020f0">CLEAR</a></p><a href="/" style="background:#a020f0;color:#fff;padding:10px 20px;border-radius:10px;text-decoration:none">Retour</a></body></html>`);
+        }
+      }catch{}
+    }
+    await new Promise(r=>setTimeout(r,1500));
+    let code=await sock.requestPairingCode(num); 
+    let pretty = code.includes('-') ? code : code.match(/.{1,4}/g)?.join('-') || code;
+    res.send(`<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}h1{color:#a020f0}.code{font-size:42px;letter-spacing:8px;background:#1a1a1a;padding:20px;border-radius:15px;border:2px solid #a020f0;margin:20px}.box{background:#222;padding:15px;border-radius:10px;text-align:left;max-width:400px;margin:20px auto}a,button{background:#a020f0;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;display:inline-block;margin:5px}</style></head><body><h1>CODE POUR ${num}</h1><div class="code">${pretty}</div><div class="box"><p><b>1 SEUL TEL:</b></p><p>WhatsApp > Paramètres > Appareils liés > Lier un appareil > Tout en bas <b>Lier avec numéro de téléphone</b></p><p>> Colle <b>${code}</b></p><p style="color:orange">⏰ 15 SECONDES MAX!</p></div><a href="/pair?num=${num}">NOUVEAU CODE</a><a href="/" style="background:#444">Retour</a><p>Expire dans 60s</p></body></html>`) 
+  }catch(e){ 
+    res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:20px"><h1>Erreur: ${e.message}</h1><p>Fais /clear + attends 25s</p><a href="/">Retour</a></body></html>`) 
+  } 
+})
 async function startBot(){
   try{
   const { version } = await fetchLatestBaileysVersion().catch(()=>({version:[2,3000,1015901307]}))
@@ -275,18 +296,14 @@ async function startBot(){
           await sock.sendMessage(from,{text:R.creatorProtect, mentions:multi},{quoted:m}); continue;
         }
       }
-      // === NOUVELLES COMMANDES TIME ===
       if(cmd==="time"){
         if(!isOwnerLid){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; }
         try{
-          let msg = await sock.sendMessage(from,{text:`⏳ *BLACK GOKU TIME - 10s* ⏳\n\n10`},{quoted:m});
+          await sock.sendMessage(from,{text:`⏳ *BLACK GOKU TIME - 10s* ⏳\n\n10`},{quoted:m});
           for(let i=9;i>=0;i--){
             await new Promise(r=>setTimeout(r,1000));
-            if(i>0){
-              await sock.sendMessage(from,{text:`⏳ ${i}...`},{quoted:m}).catch(()=>{});
-            } else {
-              await sock.sendMessage(from,{text:`💥 *0 - BOOM! TEMPS ÉCOULÉ!* 💥\n\n— BLACK GOKU —`},{quoted:m}).catch(()=>{});
-            }
+            if(i>0){ await sock.sendMessage(from,{text:`⏳ ${i}...`},{quoted:m}).catch(()=>{}); }
+            else { await sock.sendMessage(from,{text:`💥 *0 - BOOM! TEMPS ÉCOULÉ!* 💥\n\n— BLACK GOKU —`},{quoted:m}).catch(()=>{}); }
           }
         }catch(e){}
         continue;
@@ -297,18 +314,12 @@ async function startBot(){
           await sock.sendMessage(from,{text:`⏳ *BLACK GOKU TIM - 30s* ⏳\n\n30`},{quoted:m});
           for(let i=29;i>=0;i--){
             await new Promise(r=>setTimeout(r,1000));
-            if(i>0){
-              if(i % 5 === 0 || i <= 5){
-                await sock.sendMessage(from,{text:`⏳ ${i}...`},{quoted:m}).catch(()=>{});
-              }
-            } else {
-              await sock.sendMessage(from,{text:`💥 *0 - FIN DU TEMPS! 30s ÉCOULÉES!* 💥\n\n— BLACK GOKU —`},{quoted:m}).catch(()=>{});
-            }
+            if(i>0){ if(i % 5 === 0 || i <= 5){ await sock.sendMessage(from,{text:`⏳ ${i}...`},{quoted:m}).catch(()=>{}); } }
+            else { await sock.sendMessage(from,{text:`💥 *0 - FIN DU TEMPS! 30s ÉCOULÉES!* 💥\n\n— BLACK GOKU —`},{quoted:m}).catch(()=>{}); }
           }
         }catch(e){}
         continue;
       }
-      // === FIN NOUVELLES COMMANDES ===
       if(cmd==="bot"){ if(!isRealOwner) continue; if(txt.includes("off")){ db.botOff=true; saveDB(); await sock.sendMessage(from,{text:R.botOffMsg},{quoted:m}); } else if(txt.includes("on")){ db.botOff=false; saveDB(); await sock.sendMessage(from,{text:R.botOnMsg},{quoted:m}); } else { await sock.sendMessage(from,{text:R.botStatus(db.botOff)},{quoted:m}); } continue; }
       if(cmd==="goku"){ 
         if(!isOwnerLid){ await sock.sendMessage(from,{text:R.noPerm},{quoted:m}); continue; } 
@@ -364,7 +375,7 @@ async function startBot(){
         if(countNo===0) txtNo="✅ Je suis admin partout."; else txtNo=`📊 *BLACK GOKU - ${countNo} GROUPES NON-ADMIN*\n\n`+txtNo;
         await sock.sendMessage(from,{text: txtNo},{quoted:m}); continue;
       }
-      if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ ${h}h - V21.8.2 BOT:${db.botOff?'OFF 🔴':'ON 🟢'}`},{quoted:m}); continue; }
+      if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ ${h}h - V21.8.3 BOT:${db.botOff?'OFF 🔴':'ON 🟢'}`},{quoted:m}); continue; }
       if(cmd==="rdm"&&meta){ let pick=meta.participants[Math.floor(Math.random()*meta.participants.length)]; await sock.sendMessage(from,{text:`🎲 @${pick.id.split('@')[0]} choisi!`,mentions:[pick.id]},{quoted:m}); continue; }
       if(cmd==="reini"){ if(!multi.length){ await sock.sendMessage(from,{text:"😈 TAG pour reset: ₩reini @m"},{quoted:m}); continue; } for(let t of multi){ if(db.antilinkWarns[from]) db.antilinkWarns[from][t]=0; } saveDB(); await sock.sendMessage(from,{text:`♻️ @${multi[0].split('@')[0]} réinitialisé! Warns à 0`,mentions:multi},{quoted:m}); continue; }
       if(cmd==="antibod"){ if(!txt){ await sock.sendMessage(from,{text:`🛡️ ANTIBOD: ${db.antibod[from]?'ON Mode '+db.antibod[from]:'OFF'}\n\n₩antibod 1 = supprime . ! / ₩\n₩antibod 2 = + mots bot\n₩antibod 3 = ULTRA\n₩antibod off`},{quoted:m}); continue; } if(txt.includes("off")) delete db.antibod[from]; else if(txt.includes("3")) db.antibod[from]=3; else if(txt.includes("2")) db.antibod[from]=2; else db.antibod[from]=1; saveDB(); await sock.sendMessage(from,{text:`🛡️ ANTIBOD Mode ${db.antibod[from]||'OFF'} ON`},{quoted:m}); continue; }
@@ -485,4 +496,4 @@ async function startBot(){
   }
 }
 startBot()
-app.listen(PORT,'0.0.0.0',()=>console.log("BLACK GOKU V21.8.2 NO BAD MAC + TIME/TIM OK"))
+app.listen(PORT,'0.0.0.0',()=>console.log("BLACK GOKU V21.8.3 CODE 1 TEL FIX OK"))
