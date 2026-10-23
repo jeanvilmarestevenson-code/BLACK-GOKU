@@ -1,7 +1,7 @@
 {
   "name": "black-goku-h24",
-  "version": "21.6.0",
-  "description": "BLACK GOKU H24 V21.6 ZENKAI - ANTI KICK MANUEL + ANTI DEMOTE + ZENKAI IMMORTEL + PLAY + BOY OWNER ONLY + ANTILINK 4 WARNS + ANTISTATUS",
+  "version": "21.8.0",
+  "description": "BLACK GOKU H24 V21.8 ZENKAI - QR + CODE 8 CHIFFRES + ANTI KICK MANUEL + ANTI DEMOTE + ZENKAI IMMORTEL + PLAY + BOY OWNER ONLY + ANTILINK 4 WARNS + ANTISTATUS + GOKU KAIO IMAGE",
   "main": "web.js",
   "scripts": {
     "start": "node web.js"
