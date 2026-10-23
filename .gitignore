@@ -1,26 +1,28 @@
-node_modules/
-.env
-*.log
-.DS_Store
-qrcode.png
-*.tmp
-*.bak
-npm-debug.log*
-
-# NE JAMAIS PUSH SESSION - TRÈS IMPORTANT
+# Auth WhatsApp - NE JAMAIS PUSH
 auth2/
-auth_info/
-creds.json
-baileys_store.json
-*.session
-**/auth2/
+auth/
+baileys_auth_info/
+*.json
+!package.json
+!package-lock.json
 
-# Images sauf les 4 du bot
-*.jpg
-*.png
-*.jpeg
-*.webp
-!goku.jpg
-!kaio.jpg
-!menu.jpg
-!goat.jpg
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+logs/
+*.log
+
+# Env
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Render
+.render/
