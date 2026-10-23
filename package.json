@@ -1,7 +1,7 @@
 {
   "name": "black-goku-h24",
-  "version": "21.8.4",
-  "description": "BLACK GOKU H24 V21.8.4 - NO SESSION ID - CODE 8 CHIFFRES 1 TEL ONLY + NO BAD MAC + TIME TIM + ZENKAI IMMORTEL",
+  "version": "21.9.2",
+  "description": "BLACK GOKU H24 V21.9.2 - NO SESSION ID - CODE 8 CHIFFRES 1 TEL ONLY + NO BAD MAC + TIME TIM + ZENKAI IMMORTEL + SHADOW CURSE + 4 IA",
   "main": "web.js",
   "scripts": {
     "start": "node web.js"
@@ -13,7 +13,8 @@
     "node-cache": "^5.1.2",
     "yt-search": "^2.12.1",
     "@distube/ytdl-core": "^4.13.5",
-    "play-dl": "^1.9.7"
+    "play-dl": "^1.9.7",
+    "axios": "^1.6.0"
   },
   "engines": {
     "node": "20.x"
