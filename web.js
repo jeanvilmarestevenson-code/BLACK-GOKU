@@ -36,7 +36,7 @@ async function askHyper(which, question){
   if(process.env.GEMINI_API_KEY && which==="gemini"){ try{ let r = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, { contents: [{parts:[{text: sys + "\nQuestion: " + question}]}] }, {timeout:25000}); return r.data.candidates[0].content.parts[0].text; }catch(e){} }
   try{ let r = await axios.get(`https://text.pollinations.ai/${encodeURIComponent(sys + "\nQuestion: " + question + "\nRéponds français clair amical:")}`, {timeout:20000}); return typeof r.data === 'string' ? r.data : JSON.stringify(r.data); }catch{ return "Désolé, l'IA est momentanément indisponible. Réessaie."; }
 }
-const menuFR = `꧁༒☬ BLACK GOKU V21.9.6 CLEAN ☬༒꧂
+const menuFR = `꧁༒☬ BLACK GOKU ☬༒꧂
 ┏━ ✦ MEMBRES ✦ ━┓
 ┃ ₩tagall
 ┃ ₩hidetag
@@ -82,7 +82,7 @@ const menuFR = `꧁༒☬ BLACK GOKU V21.9.6 CLEAN ☬༒꧂
 ┃ ₩bot on/off
 ┃ ₩rdm / ₩vq / ₩help
 ┗━━━━━━━━━━━━━━┛
-  *BLACK GOKU CLEAN FINAL*`
+  *BLACK GOKU*`
 const R_FR = {
   noPerm:"💀 *TOUCHE PAS À CE QUI N'EST PAS À TOI, FAIBLE.*\n\n *SEUL BLACK GOKU COMMANDE ICI.*",
   creatorProtect:"☯️👑 *TOUCHE PAS À CE QUI N'EST PAS À TOI, FAIBLE.*\n\n *SEUL BLACK GOKU COMMANDE ICI TOI TU OBEIS C'EST TOUT MISÉRABLE.",
