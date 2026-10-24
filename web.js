@@ -22,7 +22,7 @@ let db = { amis:{}, saved:[], protec:[], zenkai:[], angel:[], chut:{}, blockadmi
 if (fs.existsSync(DB_FILE)) { try { db = { ...db, ...JSON.parse(fs.readFileSync(DB_FILE)) } } catch{} }
 const saveDB = () => { try { fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2)) } catch{} }
 
-let sock, status = "Demarrage V22.2 DISCONNECT FIX...", lastQR = null, groupStats = {}, presenceInterval = null
+let sock, status = "Demarrage V22.6 BLACK GOKU...", lastQR = null, groupStats = {}, presenceInterval = null
 
 const AI_PERSONAS = {
   ai: { name:"AI", emoji:"🤖", trigger:["ai","black","goku"] },
@@ -105,59 +105,61 @@ const R = {
   creatorProtect:"☯️👑 *TU OSES T'ATTAQUER À MOI? JE SUIS BLACK GOKU!*",
   onlyGoat:"👑💀 SEUL BLACK GOKU PEUT UTILISER ₩goat!",
   needTag:"😈 TAG UN MORTEL! @m",
-  ban:(j)=>`💀 HAKAI! @${j.split('@')[0]} effacé. ✅`, kick:(j)=>`💀 @${j.split('@')[0]} expulsé. ✅`,
-  promote:(j)=>`👑 @${j.split('@')[0]} élevé admin. ✅`, demote:(j)=>`@${j.split('@')[0]} n'est plus admin. ✅`,
-  mute:"🤫 *GROUPE FERMÉ!* 🔒\n\n", 
-  unmute:"🔊 *GROUPE OUVERT!* 🔓\n\n.",
-  tagall:(t)=>`🔥 *BLACK GOKU VOUS INVOQUE!* 🔥\n\n${t||"Tous!"} ✅`, 
-  hidetag:(t)=>`${t||"👻 Invocation..."} ✅`,
-  chut:(j)=>`🔇 @${j.split('@')[0]} au Néant. ✅`, 
-  unchut:(j)=>`🔓 @${j.split('@')[0]} peut parler. ✅`,
+  ban:(j)=>`💀 HAKAI! @${j.split('@')[0]} effacé.`, 
+  kick:(j)=>`💀 @${j.split('@')[0]} expulsé.`,
+  promote:(j)=>`👑 @${j.split('@')[0]} élevé admin.`, 
+  demote:(j)=>`@${j.split('@')[0]} n'est plus admin.`,
+  mute:"🤫 *GROUPE FERMÉ!* 🔒", 
+  unmute:"🔊 *GROUPE OUVERT!* 🔓",
+  tagall:(t)=>`🔥 *BLACK GOKU VOUS INVOQUE!* 🔥\n\n${t||"Tous!"}`, 
+  hidetag:(t)=>`${t||"👻 Invocation..."}`,
+  chut:(j)=>`🔇 @${j.split('@')[0]} au Néant.`, 
+  unchut:(j)=>`🔓 @${j.split('@')[0]} peut parler.`,
   blockadmin:(j)=>`⛓️ @${j.split('@')[0]} POUVOIRS SCELLÉS!`, 
   unblockadmin:(j)=>`🔓 @${j.split('@')[0]} chaînes brisées.`,
-  save:(j)=>`🛡️ @${j.split('@')[0]} Intouchable. ✅ Confirmation save ON.`, 
+  save:(j)=>`🛡️ @${j.split('@')[0]} Intouchable.`, 
   unsave:(j)=>`🛡️ Marque retirée @${j.split('@')[0]}.`,
-  protec:(j)=>`👑🔥 *PROTEC* 🔥👑\n\n@${j.split('@')[0]} Protégé. `, 
-  unprotec:(j)=>`💀 PROTEC retirée @${j.split('@')[0]}. `,
+  protec:(j)=>`👑🔥 *PROTEC* 🔥👑\n\n@${j.split('@')[0]} Protégé.`, 
+  unprotec:(j)=>`💀 PROTEC retirée @${j.split('@')[0]}.`,
   zenkai:(j)=>`👑 ZENKAI!\n\n@${j.split('@')[0]} est Élu par Black Goku!`, 
   nozenkai:(j)=>`💀 ZENKAI RETIRÉ @${j.split('@')[0]}! Toutes protections retirées.`,
-  antilink:"🔗 *ANTILINK TOTAL ON!* ✅\n\nantilink activé. Bloque liens + chaines.", 
-  antilinkoff: "ANTILINK OFF.",
-  antibodOn:(m)=>`🛡️ *ANTIBOD MODE ${m} ON!* \n\nConfirmation: antibod ${m} activé.`,
+  antilink:"🔗 *ANTILINK TOTAL ON!* Bloque liens + chaines.", 
+  antilinkoff:"ANTILINK OFF.",
+  antibodOn:(m)=>`🛡️ *ANTIBOD MODE ${m} ON!*`,
   antibodOff:"ANTIBOD OFF.",
-  antilock:"🔒 *ANTILOCK ON!* ✅\n\nConfirmation: antilock activé. Bloque photo/nom/desc.", 
+  antilock:"🔒 *ANTILOCK ON!* Bloque photo/nom/desc.", 
   antilockoff:"ANTILOCK OFF.",
   antidemote:"🛡️ *ANTIDEMOTE ON!*", 
   antidemoteoff:"ANTIDEMOTE OFF.",
-  antisticker:"🖼️ *ANTISTICKER ON!*.", 
-  antistickeroff:" ANTISTICKER OFF.",
-  antistatus:"👁️ *ANTISTATUS ON!* ", 
-  antistatusoff:" ANTISTATUS OFF.",
+  antisticker:"🖼️ *ANTISTICKER ON!*", 
+  antistickeroff:"ANTISTICKER OFF.",
+  antistatus:"👁️ *ANTISTATUS ON!*", 
+  antistatusoff:"ANTISTATUS OFF.",
   welcome:"👋 *WELCOME ON*", 
   welcomeoff:"WELCOME OFF.",
-  ghost:"👻💀 *GHOST DIABLE ON* ghost activé", 
+  ghost:"👻💀 *GHOST DIABLE ON*", 
   ghostoff:"GHOST OFF.",
   ghostListEmpty:"👻 *GHOST LISTE VIDE*",
-  boyOn:"👼✨ *boy ON.", 
-  boyOff:"boy off.", 
-  boyProtect:(j)=>`👼✨ @${j.split('@')[0]} est maintenant protégé par Black Goku `,
+  boyOn:"👼✨ *ANGE PROTECTEUR ACTIVÉ!* ✨👼", 
+  boyOff:"👼 ANGE MODE OFF.", 
+  boyProtect:(j)=>`👼✨ @${j.split('@')[0]} est maintenant protégé par Black Goku`,
   amis:(j)=>`✅ @${j.split('@')[0]} PEUT UTILISER UNE PART DE TON POUVOIR.`, 
   noami:(j)=>`❌💀 @${j.split('@')[0]} PEUT PLUS UTILISER TON POUVOIR.`,
   curseOn:(j)=>`꧁༒☬ *SHADOW CURSE ON* ☬༒꧂\n\n@${j.split('@')[0]}... TA VOIX M'APPARTIENT!`,
   curseOff:(j)=>`🔓 Malédiction levée @${j.split('@')[0]}`,
   neantOn:(c,d)=>`💀☠️ NÉANT! ${d}/${c} messages effacés!`,
-  neantStart:(c)=>`💀☠️ NÉANT EN COURS... suppression ${c}... ⏳`,
-  reiniOk:(j)=>`♻️ @${j.split('@')[0]} réinitialisé! Warns à 0 ✅ Confirmation: reini OK.`,
-  botOffMsg:"💀 *BLACK GOKU ÉTEINT* 💀\n\n✅ Confirmation: bot OFF.", 
-  botOnMsg:"☯️🔥 *BLACK GOKU ALLUMÉ* 🔥☯️\n\n✅ Confirmation: bot ON.",
-  botStatus:(off)=>`🤖 Bot: *${off?'OFF 🔴':'ON 🟢'}* ✅ Confirmation status.`,
-  gokuCaption:"\"Ton existence est une erreur que je vais corriger.\"\n\n— BLACK GOKU — ✅",
-  goatStart:(n)=>`☯️👑 *C'EST MOI, BLACK GOKU VOTRE CAUCHEMAR😈*\n\n💀 *${n} FAIBLES... HAKAI!* ✅`,
-  goatEnd:`꧁༒☬ *FINI* ☬༒꧂\n\n☠️ *PLUS RIEN. BLACK GOKU.* 👑 ✅ Confirmation goat terminé.`,
+  neantStart:(c)=>`💀☠️ NÉANT EN COURS... suppression ${c}...`,
+  reiniOk:(j)=>`♻️ @${j.split('@')[0]} réinitialisé! Warns à 0`,
+  botOffMsg:"💀 *BLACK GOKU ÉTEINT* 💀", 
+  botOnMsg:"☯️🔥 *BLACK GOKU ALLUMÉ* 🔥☯️",
+  botStatus:(off)=>`🤖 Bot: *${off?'OFF 🔴':'ON 🟢'}*`,
+  gokuCaption:"\"Ton existence est une erreur que je vais corriger.\"\n\n— BLACK GOKU —",
+  goatStart:(n)=>`☯️👑 *C'EST MOI, BLACK GOKU VOTRE CAUCHEMAR😈*\n\n💀 *${n} FAIBLES... HAKAI!*`,
+  goatEnd:`꧁༒☬ *FINI* ☬༒꧂\n\n☠️ *PLUS RIEN. BLACK GOKU.* 👑`,
   vqOk:"👁️🔥 *VUE UNIQUE DÉVOILÉE* 🔥👁️", 
-  vqNeed:"😈 Réponds à une vue unique avec ₩vq! ❌",
-  statsOk:(h)=>`⏱️ ${h}h - V22.3 BOT ON.`,
-  welcomeMsg:(j,n)=>`Bienvenue @${j.split('@')[0]} 👋\n\nBienvenue dans *${n}*`,
+  vqNeed:"😈 Réponds à une vue unique avec ₩vq!",
+  statsOk:(h)=>`⏱️ ${h}h - V22.6 BOT ON`,
+  welcomeMsg:(j,n)=>`Bienvenue @${j.split('@')[0]} 👋\n\nBienvenue dans *${n}* !`,
   byeMsg:(j,n)=>`À plus @${j.split('@')[0]} 👋\n\nIl a quitté *${n}*`
 }
 
@@ -166,7 +168,7 @@ function isCreator(jid){ if(!jid) return false; const num=jid.replace(/[^0-9]/g,
 function getActiveCommands(gid){ let a=[]; if(db.antilink.includes(gid)) a.push("antilink"); if(db.antibod[gid]) a.push("antibod"+db.antibod[gid]); if(db.antisticker.includes(gid)) a.push("antisticker"); if(db.antistatus.includes(gid)) a.push("antistatus"); if(db.welcome.includes(gid)) a.push("welcome"); if(db.ghost.includes(gid)) a.push("ghost"); if(db.boy.includes(gid)) a.push("boy"); if(db.antilock.includes(gid)) a.push("antilock"); if(db.antidemote.includes(gid)) a.push("antidemote"); return a; }
 function amIAdmin(g){ if(!sock) return false; const myId=sock.user.id; const myNum=myId.split(':')[0].replace(/[^0-9]/g,'').slice(0,15); let me=g.participants.find(p=>p.id===myId||p.id.replace(/[^0-9]/g,'').includes(myNum)); return me&&(me.admin==='admin'||me.admin==='superadmin'); }
 
-app.get('/', (req,res)=> res.send(`<html><head><title>BLACK GOKU V22.2</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}h1{color:#a020f0}a,button{background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none;display:inline-block;margin:10px;font-weight:bold;border:none}input{padding:15px;border-radius:10px;border:none;width:80%;max-width:300px;margin:10px;text-align:center}.card{background:#1a1a1a;padding:20px;border-radius:15px;margin:20px auto;max-width:400px;border:1px solid #a020f0}</style></head><body><h1>☯️ BLACK GOKU V22.2 DISCONNECT FIX</h1><h2>${status} - BOT:${db.botOff?'OFF 🔴':'ON 🟢'}</h2><div class="card"><input id="num" value="5551982215198"><br><button onclick="let n=document.getElementById('num').value.replace(/[^0-9]/g,''); location.href='/pair?num='+n">CODE</button></div><div class="card"><a href="/qr">QR</a> <a href="/clear" style="background:#ff0040">CLEAR</a></div></body></html>`))
+app.get('/', (req,res)=> res.send(`<html><head><title>BLACK GOKU V22.6</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}h1{color:#a020f0}a,button{background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none;display:inline-block;margin:10px;font-weight:bold;border:none}input{padding:15px;border-radius:10px;border:none;width:80%;max-width:300px;margin:10px;text-align:center}.card{background:#1a1a1a;padding:20px;border-radius:15px;margin:20px auto;max-width:400px;border:1px solid #a020f0}</style></head><body><h1>☯️ BLACK GOKU V22.6 COMPLET</h1><h2>${status} - BOT:${db.botOff?'OFF 🔴':'ON 🟢'}</h2><div class="card"><input id="num" value="5551982215198"><br><button onclick="let n=document.getElementById('num').value.replace(/[^0-9]/g,''); location.href='/pair?num='+n">CODE</button></div><div class="card"><a href="/qr">QR</a> <a href="/clear" style="background:#ff0040">CLEAR</a></div></body></html>`))
 app.get('/health', (req,res)=> res.send('OK '+status))
 app.get('/qr', (req,res)=>{ if(!lastQR) return res.send(`<html><body style="background:#000;color:#fff;text-align:center;padding:50px"><h1>Pas de QR - ${status}</h1><script>setTimeout(()=>location.reload(),5000)</script></body></html>`); res.send(`<html><body style="text-align:center;background:#000;padding:20px"><h1 style="color:#a020f0">QR</h1><img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(lastQR)}" style="border:10px solid #a020f0;border-radius:20px"/><br><br><a href="/" style="background:#a020f0;color:#fff;padding:15px 25px;border-radius:10px;text-decoration:none">Retour</a><script>setTimeout(()=>location.reload(),20000)</script></body></html>`) })
 app.get('/clear', (req,res)=>{ try{ if(fs.existsSync('auth2')) fs.rmSync('auth2',{recursive:true,force:true}); fs.mkdirSync('auth2',{recursive:true}); lastQR=null; status="CLEAR OK"; res.send('CLEAR OK'); setTimeout(()=>startBot(),1500); }catch(e){ res.send(e.message) } })
@@ -179,12 +181,11 @@ async function startBot(){
     sock = makeWASocket({ version, auth:{creds:state.creds, keys:makeCacheableSignalKeyStore(state.keys, P({level:'silent'}))}, logger:P({level:'silent'}), browser: Browsers.ubuntu("Chrome"), msgRetryCounterCache, getMessage: async()=>undefined, markOnlineOnConnect:true, syncFullHistory:false })
     sock.ev.on('creds.update', saveCreds)
     
-    // === DISCONNECT FIX V22.2 ===
     sock.ev.on('connection.update', async(u)=>{
       const { connection, lastDisconnect, qr } = u; 
       if(qr) lastQR=qr;
       if(connection==='open'){
-        status="ACTIF V22.2 24/7 ✅";
+        status="ACTIF V22.6 24/7 ✅";
         if(presenceInterval) clearInterval(presenceInterval);
         presenceInterval=setInterval(()=>{ try{ sock.sendPresenceUpdate('available') }catch{} },15000);
         console.log("✅ CONNECTÉ - BLACK GOKU EN LIGNE 24/7");
@@ -227,14 +228,30 @@ async function startBot(){
           setTimeout(()=>{ sock.sendMessage(from,{text:`⛓️💀 *VOIX VOLÉE #${n}* 💀⛓️\n\n@${sender.split('@')[0]} a essayé de dire:\n> "${orig}"\n\nMais: "Je rampe devant Black Goku... #${n}"`,mentions:[sender]}).catch(()=>{}) },3500);
           continue;
         }
+        // === ANTILINK AVEC AVERTISSEMENTS BLACK GOKU 1/2/3/4 ===
         if(isGroup && !isMe && db.antilink.includes(from)){
           let tlow=(text||"").toLowerCase();
           let isLink=/https?:\/\/|www\.|chat\.whatsapp\.com|wa\.me\/|whatsapp\.com\/channel|\/channel\/|t\.me\/|discord\.gg|instagram\.com|youtu\.be|youtube\.com/.test(tlow);
           if(isLink && !isProtected(sender)){
             try{ await sock.sendMessage(from,{delete:{remoteJid:from,fromMe:false,id:m.key.id,participant:sender}}) }catch{}
-            if(!db.antilinkWarns[from]) db.antilinkWarns[from]={}; db.antilinkWarns[from][sender]=(db.antilinkWarns[from][sender]||0)+1;
-            if(db.antilinkWarns[from][sender]>=4){ try{ await sock.groupParticipantsUpdate(from,[sender],"remove") }catch{}; db.antilinkWarns[from][sender]=0; }
-            saveDB(); continue;
+            if(!db.antilinkWarns[from]) db.antilinkWarns[from]={}; 
+            db.antilinkWarns[from][sender]=(db.antilinkWarns[from][sender]||0)+1;
+            let warns = db.antilinkWarns[from][sender];
+            saveDB();
+            if(warns===1){
+              await sock.sendMessage(from,{text:`⚠️ *AVERTISSEMENT 1/4* ⚠️\n\n@${sender.split('@')[0]} T'oses envoyer des liens dans mon royaume? La prochaine fois je te brise.`,mentions:[sender]}).catch(()=>{});
+            } else if(warns===2){
+              await sock.sendMessage(from,{text:`⛓️ *AVERTISSEMENT 2/4* ⛓️\n\n@${sender.split('@')[0]} Tu continues à défier Black Goku? 2 avertissements, plus que 2 avant l'effacement.`,mentions:[sender]}).catch(()=>{});
+            } else if(warns===3){
+              await sock.sendMessage(from,{text:`💀 *DERNIER AVERTISSEMENT 3/4* 💀\n\n@${sender.split('@')[0]} FAIBLE! C'est ton dernier souffle. Un lien de plus et ton existence sera effacée.`,mentions:[sender]}).catch(()=>{});
+            } else if(warns>=4){
+              await sock.sendMessage(from,{text:`☯️👑 *HAKAI!* 👑☯️\n\n@${sender.split('@')[0]} TU AS OSÉ DÉFIER BLACK GOKU 4 FOIS!\n\n"Ton existence est une erreur que je vais corriger."\n\n💥 *EFFACÉ DU NÉANT!*`,mentions:[sender]}).catch(()=>{});
+              await new Promise(r=>setTimeout(r,1500));
+              try{ await sock.groupParticipantsUpdate(from,[sender],"remove") }catch{}
+              db.antilinkWarns[from][sender]=0;
+              saveDB();
+            }
+            continue;
           }
         }
         if(isGroup && !isMe && db.antistatus.includes(from)){
@@ -290,18 +307,18 @@ async function startBot(){
         if(cmd==="info"&&meta){ await sock.sendMessage(from,{text:`📛 ${meta.subject}\n\n👥 ${meta.participants.length} membres\n🆔 ${from}`},{quoted:m}); continue; }
         if(cmd==="groupe"){ if(!isRealOwner) continue; let all=await sock.groupFetchAllParticipating().catch(()=>({})); let txtG=""; let c=0,idx=1; for(let gid in all){ if(!amIAdmin(all[gid])) continue; c++; let a=getActiveCommands(gid); txtG+=`${idx}. "${all[gid].subject}" - ${a.length? a.join(','):'0'}\n`; idx++; } await sock.sendMessage(from,{text:c?`📊 ${c} GROUPES ADMIN\n\n${txtG}`:"❌ Aucun groupe admin"},{quoted:m}); continue; }
         if(cmd==="no"){ if(!isRealOwner) continue; let all=await sock.groupFetchAllParticipating().catch(()=>({})); let txtG=""; let c=0,idx=1; for(let gid in all){ if(amIAdmin(all[gid])) continue; c++; let a=getActiveCommands(gid); txtG+=`${idx}. "${all[gid].subject}" - ${a.length? a.join(','):'0'}\n`; idx++; } await sock.sendMessage(from,{text:c?`📊 ${c} NON-ADMIN\n\n${txtG}`:"✅ Admin partout"},{quoted:m}); continue; }
-        if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:`⏱️ ${h}h - V22.2 BOT:${db.botOff?'OFF 🔴':'ON 🟢'}`},{quoted:m}); continue; }
+        if(cmd==="stats"){ let h=Math.floor(process.uptime()/3600); await sock.sendMessage(from,{text:R.statsOk(h),mentions:[]},{quoted:m}); continue; }
         if(cmd==="rdm"&&meta){ let pick=meta.participants[Math.floor(Math.random()*meta.participants.length)]; await sock.sendMessage(from,{text:`🎲 @${pick.id.split('@')[0]} choisi!`,mentions:[pick.id]},{quoted:m}); continue; }
-        if(cmd==="reini"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi) if(db.antilinkWarns[from]) db.antilinkWarns[from][t]=0; saveDB(); await sock.sendMessage(from,{text:`♻️ @${multi[0].split('@')[0]} reset 0`,mentions:multi},{quoted:m}); continue; }
-        if(cmd==="antibod"){ if(!txt){ await sock.sendMessage(from,{text:`🛡️ ANTIBOD: ${db.antibod[from]?'ON '+db.antibod[from]:'OFF'}\n₩antibod 1\n₩antibod 2\n₩antibod 3\n₩antibod off`},{quoted:m}); continue; } if(txt.includes("off")) delete db.antibod[from]; else if(txt.includes("3")) db.antibod[from]=3; else if(txt.includes("2")) db.antibod[from]=2; else db.antibod[from]=1; saveDB(); await sock.sendMessage(from,{text:`🛡️ ANTIBOD ${db.antibod[from]||'OFF'} ON`},{quoted:m}); continue; }
+        if(cmd==="reini"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi) if(db.antilinkWarns[from]) db.antilinkWarns[from][t]=0; saveDB(); await sock.sendMessage(from,{text:R.reiniOk(multi[0]),mentions:multi},{quoted:m}); continue; }
+        if(cmd==="antibod"){ if(!txt){ await sock.sendMessage(from,{text:`🛡️ ANTIBOD: ${db.antibod[from]?'ON '+db.antibod[from]:'OFF'}\n₩antibod 1\n₩antibod 2\n₩antibod 3\n₩antibod off`},{quoted:m}); continue; } if(txt.includes("off")){ delete db.antibod[from]; saveDB(); await sock.sendMessage(from,{text:R.antibodOff},{quoted:m}); } else { let mde=txt.includes("3")?3:txt.includes("2")?2:1; db.antibod[from]=mde; saveDB(); await sock.sendMessage(from,{text:R.antibodOn(mde)},{quoted:m}); } continue; }
         if(cmd==="antilink"){ if(txt.includes("off")){ db.antilink=db.antilink.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.antilinkoff},{quoted:m}) } else { if(!db.antilink.includes(from)) db.antilink.push(from); saveDB(); await sock.sendMessage(from,{text:R.antilink},{quoted:m}) } continue; }
         if(cmd==="antisticker"){ if(txt.includes("off")){ db.antisticker=db.antisticker.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.antistickeroff},{quoted:m}) } else { if(!db.antisticker.includes(from)) db.antisticker.push(from); saveDB(); await sock.sendMessage(from,{text:R.antisticker},{quoted:m}) } continue; }
         if(cmd==="antistatus"){ if(txt.includes("off")){ db.antistatus=db.antistatus.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.antistatusoff},{quoted:m}) } else { if(!db.antistatus.includes(from)) db.antistatus.push(from); saveDB(); await sock.sendMessage(from,{text:R.antistatus},{quoted:m}) } continue; }
         if(cmd==="welcome"){ if(txt.includes("off")){ db.welcome=db.welcome.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.welcomeoff},{quoted:m}) } else { if(!db.welcome.includes(from)) db.welcome.push(from); saveDB(); await sock.sendMessage(from,{text:R.welcome},{quoted:m}) } continue; }
         if(cmd==="ghost"){ if(txt.toLowerCase().includes("off")){ db.ghost=db.ghost.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.ghostoff},{quoted:m}); continue; } if(txt.toLowerCase().includes("list")){ if(!db.ghostCache[from]?.length){ await sock.sendMessage(from,{text:R.ghostListEmpty},{quoted:m}); continue; } let last=db.ghostCache[from].slice(-15); let list=last.map((g,i)=>`${i+1}. @${g.sender.split('@')[0]}: ${(g.text||'media').slice(0,40)}`).join('\n'); await sock.sendMessage(from,{text:`👻 GHOST ${db.ghostCache[from].length} msgs\n\n${list}`,mentions:last.map(g=>g.sender)},{quoted:m}); continue; } if(!db.ghost.includes(from)) db.ghost.push(from); saveDB(); await sock.sendMessage(from,{text:R.ghost},{quoted:m}); continue; }
-        if(cmd==="curse"){ if(!multi.length){ await sock.sendMessage(from,{text:"😈 TAG: ₩curse @m"},{quoted:m}); continue; } if(!db.curse[from]) db.curse[from]=[]; if(!db.curseCount[from]) db.curseCount[from]={}; for(let t of multi) if(!db.curse[from].includes(t)) db.curse[from].push(t); for(let t of multi) db.curseCount[from][t]=0; saveDB(); await sock.sendMessage(from,{text:`꧁༒☬ *SHADOW CURSE* ☬༒꧂\n\n@${multi[0].split('@')[0]} TA VOIX M'APPARTIENT!`,mentions:multi},{quoted:m}); continue; }
-        if(cmd==="uncurse"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } if(db.curse[from]) for(let t of multi) db.curse[from]=db.curse[from].filter(x=>x!==t); if(db.curseCount[from]) for(let t of multi) delete db.curseCount[from][t]; saveDB(); await sock.sendMessage(from,{text:`🔓 Levée @${multi[0].split('@')[0]}`,mentions:multi},{quoted:m}); continue; }
-        if(cmd==="neant"||cmd==="void"){ let count=parseInt(txt)||50; if(count>100) count=100; let msgs=db.ghostCache[from]||[]; let del=0; await sock.sendMessage(from,{text:`💀 NÉANT ${count}...`},{quoted:m}); for(let i=msgs.length-1;i>=0&&del<count;i--){ try{ await sock.sendMessage(from,{delete:{remoteJid:from,fromMe:false,id:msgs[i].id,participant:msgs[i].sender}}); del++; }catch{} await new Promise(r=>setTimeout(r,80)); } await sock.sendMessage(from,{text:`💀 ${del} effacés!`},{quoted:m}); continue; }
+        if(cmd==="curse"){ if(!multi.length){ await sock.sendMessage(from,{text:"😈 TAG: ₩curse @m"},{quoted:m}); continue; } if(!db.curse[from]) db.curse[from]=[]; if(!db.curseCount[from]) db.curseCount[from]={}; for(let t of multi) if(!db.curse[from].includes(t)) db.curse[from].push(t); for(let t of multi) db.curseCount[from][t]=0; saveDB(); await sock.sendMessage(from,{text:R.curseOn(multi[0]),mentions:multi},{quoted:m}); continue; }
+        if(cmd==="uncurse"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } if(db.curse[from]) for(let t of multi) db.curse[from]=db.curse[from].filter(x=>x!==t); if(db.curseCount[from]) for(let t of multi) delete db.curseCount[from][t]; saveDB(); await sock.sendMessage(from,{text:R.curseOff(multi[0]),mentions:multi},{quoted:m}); continue; }
+        if(cmd==="neant"||cmd==="void"){ let count=parseInt(txt)||50; if(count>100) count=100; let msgs=db.ghostCache[from]||[]; let del=0; await sock.sendMessage(from,{text:R.neantStart(count),},{quoted:m}); for(let i=msgs.length-1;i>=0&&del<count;i--){ try{ await sock.sendMessage(from,{delete:{remoteJid:from,fromMe:false,id:msgs[i].id,participant:msgs[i].sender}}); del++; }catch{} await new Promise(r=>setTimeout(r,80)); } await sock.sendMessage(from,{text:R.neantOn(count,del),},{quoted:m}); continue; }
         if(cmd==="save"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi) if(!db.saved.includes(t)) db.saved.push(t); saveDB(); await sock.sendMessage(from,{text:R.save(multi[0]),mentions:multi},{quoted:m}); continue; }
         if(cmd==="unsave"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi) db.saved=db.saved.filter(x=>x!==t); saveDB(); await sock.sendMessage(from,{text:R.unsave(multi[0]),mentions:multi},{quoted:m}); continue; }
         if(cmd==="protec"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi) if(!db.protec.includes(t)) db.protec.push(t); saveDB(); await sock.sendMessage(from,{text:R.protec(multi[0]),mentions:multi},{quoted:m}); continue; }
@@ -310,10 +327,10 @@ async function startBot(){
         if(cmd==="nozenkai"||cmd==="unzenkai"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi){ db.zenkai=db.zenkai.filter(x=>x!==t); db.protec=db.protec.filter(x=>x!==t); db.saved=db.saved.filter(x=>x!==t); db.angel=db.angel.filter(x=>x!==t); } saveDB(); await sock.sendMessage(from,{text:R.nozenkai(multi[0]),mentions:multi},{quoted:m}); continue; }
         if(cmd==="chut"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } if(!db.chut[from]) db.chut[from]=[]; for(let t of multi) if(!db.chut[from].includes(t)) db.chut[from].push(t); saveDB(); await sock.sendMessage(from,{text:R.chut(multi[0]),mentions:multi},{quoted:m}); continue; }
         if(cmd==="unchut"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } if(db.chut[from]) for(let t of multi) db.chut[from]=db.chut[from].filter(x=>x!==t); saveDB(); await sock.sendMessage(from,{text:R.unchut(multi[0]),mentions:multi},{quoted:m}); continue; }
-        if(cmd==="blockadmin"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi) if(!db.blockadmin.includes(t)) db.blockadmin.push(t); saveDB(); await sock.sendMessage(from,{text:`⛓️ @${multi[0].split('@')[0]} SCELLÉ!`,mentions:multi},{quoted:m}); continue; }
-        if(cmd==="unblockadmin"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi) db.blockadmin=db.blockadmin.filter(x=>x!==t); saveDB(); await sock.sendMessage(from,{text:`🔓 @${multi[0].split('@')[0]} libéré!`,mentions:multi},{quoted:m}); continue; }
-        if(cmd==="antilock"){ if(txt.includes("off")){ db.antilock=db.antilock.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:"🔓 ANTILOCK OFF"},{quoted:m}) } else { if(!db.antilock.includes(from)) db.antilock.push(from); saveDB(); await sock.sendMessage(from,{text:"🔒 ANTILOCK ON"},{quoted:m}) } continue; }
-        if(cmd==="antidemote"){ if(txt.includes("off")){ db.antidemote=db.antidemote.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:"ANTIDEMOTE OFF"},{quoted:m}) } else { if(!db.antidemote.includes(from)) db.antidemote.push(from); saveDB(); await sock.sendMessage(from,{text:"🛡️ ANTIDEMOTE ON"},{quoted:m}) } continue; }
+        if(cmd==="blockadmin"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi) if(!db.blockadmin.includes(t)) db.blockadmin.push(t); saveDB(); await sock.sendMessage(from,{text:R.blockadmin(multi[0]),mentions:multi},{quoted:m}); continue; }
+        if(cmd==="unblockadmin"){ if(!multi.length){ await sock.sendMessage(from,{text:R.needTag},{quoted:m}); continue; } for(let t of multi) db.blockadmin=db.blockadmin.filter(x=>x!==t); saveDB(); await sock.sendMessage(from,{text:R.unblockadmin(multi[0]),mentions:multi},{quoted:m}); continue; }
+        if(cmd==="antilock"){ if(txt.includes("off")){ db.antilock=db.antilock.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.antilockoff},{quoted:m}) } else { if(!db.antilock.includes(from)) db.antilock.push(from); saveDB(); await sock.sendMessage(from,{text:R.antilock},{quoted:m}) } continue; }
+        if(cmd==="antidemote"){ if(txt.includes("off")){ db.antidemote=db.antidemote.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.antidemoteoff},{quoted:m}) } else { if(!db.antidemote.includes(from)) db.antidemote.push(from); saveDB(); await sock.sendMessage(from,{text:R.antidemote},{quoted:m}) } continue; }
         if(cmd==="boy"){ if(txt.includes("off")){ db.boy=db.boy.filter(x=>x!==from); saveDB(); await sock.sendMessage(from,{text:R.boyOff},{quoted:m}); continue } if(txt.includes("on")||!multi.length){ if(!db.boy.includes(from)) db.boy.push(from); saveDB(); await sock.sendMessage(from,{text:R.boyOn},{quoted:m}); continue } for(let t of multi){ if(!db.angel.includes(t)) db.angel.push(t); if(!db.protec.includes(t)) db.protec.push(t); if(!db.zenkai.includes(t)) db.zenkai.push(t); if(!db.saved.includes(t)) db.saved.push(t); } saveDB(); await sock.sendMessage(from,{text:R.boyProtect(multi[0]),mentions:multi},{quoted:m}); continue; }
       }
     })
@@ -332,6 +349,5 @@ async function startBot(){
   }catch(e){ console.log("Erreur",e.message); setTimeout(()=>startBot(),5000); }
 }
 startBot()
-app.listen(PORT,'0.0.0.0',()=>console.log("BLACK GOKU V22.2 DISCONNECT FIX OK - Port "+PORT))
-// ANTI-SLEEP RENDER - NE JAMAIS ENLEVER
+app.listen(PORT,'0.0.0.0',()=>console.log("BLACK GOKU V22.6 COMPLET OK - Port "+PORT))
 setInterval(()=>{ try{ axios.get(`http://localhost:${PORT}/health`).catch(()=>{}) }catch{} },300000)
