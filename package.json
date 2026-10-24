@@ -1,19 +1,16 @@
 {
-  "name": "black-goku-v21-9-6-clean",
-  "version": "21.9.6",
+  "name": "black-goku-v22-6-clean",
+  "version": "22.6.0",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.8",
-    "pino": "^8.16.0",
+    "@whiskeysockets/baileys": "^6.7.18",
+    "pino": "^8.19.0",
     "express": "^4.18.2",
     "node-cache": "^5.1.2",
-    "axios": "^1.6.2",
-    "yt-search": "^2.10.4",
-    "@distube/ytdl-core": "^4.13.5",
-    "play-dl": "^1.9.7"
+    "axios": "^1.6.7"
   },
   "engines": {
     "node": ">=18.0.0"
