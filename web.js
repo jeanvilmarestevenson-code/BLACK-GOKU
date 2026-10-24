@@ -102,7 +102,7 @@ const menuFR = `꧁༒☬ BLACK GOKU ☬༒꧂
 
 const R = {
   noPerm:"💀 *TOUCHE PAS À CE QUI N'EST PAS À TOI, FAIBLE.*\n\n *SEUL BLACK GOKU COMMANDE ICI.*",
-  creatorProtect:"☯️👑 *TU OSES T'ATTAQUER À MOI? JE SUIS BLACK GOKU!*",
+  creatorProtect:"💀 *TOUCHE PAS À CE QUI N'EST PAS À TOI, FAIBLE.*\n\n *SEUL BLACK GOKU COMMANDE ICI TOI TU OBEIS C'EST TOUT MISÉRABLE😈.*",
   onlyGoat:"👑💀 SEUL BLACK GOKU PEUT UTILISER ₩goat!",
   needTag:"😈 TAG UN MORTEL! @m",
   ban:(j)=>`💀 HAKAI! @${j.split('@')[0]} effacé.`, 
@@ -121,7 +121,7 @@ const R = {
   unsave:(j)=>`🛡️ Marque retirée @${j.split('@')[0]}.`,
   protec:(j)=>`👑🔥 *PROTEC* 🔥👑\n\n@${j.split('@')[0]} Protégé.`, 
   unprotec:(j)=>`💀 PROTEC retirée @${j.split('@')[0]}.`,
-  zenkai:(j)=>`👑 ZENKAI!\n\n@${j.split('@')[0]} est Élu par Black Goku!`, 
+  zenkai:(j)=>`👑 ZENKAI!\n\n@${j.split('@')[0]} est protégé par Black Goku!`, 
   nozenkai:(j)=>`💀 ZENKAI RETIRÉ @${j.split('@')[0]}! Toutes protections retirées.`,
   antilink:"🔗 *ANTILINK TOTAL ON!* Bloque liens + chaines.", 
   antilinkoff:"ANTILINK OFF.",
